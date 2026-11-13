@@ -2,7 +2,7 @@
 
 A design tool for **wayfinding maps**: the maps on physical signs and boards. Pick an area, fetch OpenStreetMap data as layers, style it like vector artwork, set road names on a path along the road, place signs and export SVG, PDF or an Illustrator script.
 
-Today it exists as a native macOS app. The plan is to rebuild it as a web app (Figma-style) with desktop wrappers for Mac, Windows and Linux. See [docs/WEB_REBUILD.md](docs/WEB_REBUILD.md).
+Today it exists as a native macOS app. It is being rebuilt as a web app (Figma-style) with desktop wrappers for Mac, Windows and Linux, as an accessible alternative to ArcGIS Maps and MAPublisher for graphic and wayfinding designers. See [docs/WEB_REBUILD.md](docs/WEB_REBUILD.md) for the rebuild and [docs/ROADMAP.md](docs/ROADMAP.md) for what comes after.
 
 ## Repository layout
 
@@ -10,12 +10,14 @@ Today it exists as a native macOS app. The plan is to rebuild it as a web app (F
 macos/        The current native app (SwiftUI, ~10,000 lines of Swift). Works today.
   Nolli/       Source
   scripts/build.sh  Builds Nolli.app
-web/          The web rebuild. Empty; start here (see docs/WEB_REBUILD.md)
+web/          The web rebuild. Scaffolding and text shaping only so far (see web/README.md)
 docs/
   DESIGN.md         How the macOS app is built: architecture, label system, export
   WEB_REBUILD.md    Plan for the web + desktop rebuild
+  ROADMAP.md        Features beyond parity, and Illustrator integration
   PROJECT_FORMAT.md The .nolli file format (the web app must open these)
-  design/           Interface description, screenshots, design tokens, HTML copy of the UI
+  design/           The current interface: description, screenshots, tokens, HTML copy
+  design/redesign/  The redesigned interface (pen.dev handoff) that the web app follows
 CLAUDE.md     Context for continuing work with Claude Code
 ```
 
@@ -35,14 +37,16 @@ The app is signed ad hoc, which is enough to run it on the machine that built it
 
 What works (checked by running it): opening and saving projects, pan/zoom/rotate with tiles and vectors kept in step, OSM fetch, per-layer styling with per-field inheritance for road types, curved road labels with bend, spacing and overlap rules, edit mode, signs, and SVG, PDF and Illustrator-script export.
 
-What has **not** been checked:
+What has **not** been checked in the macOS app:
 - Running the exported Illustrator script in Illustrator (it compiles as JavaScript only).
 - Trackpad pinch, two-finger pan and twist (tested with the mouse only).
 - Keyboard shortcuts (H, E, B, Space, Esc, Delete) and the number fields' arrow keys.
 - Building through `xcodebuild`: the Xcode project file was edited by hand and has only been built with `swiftc`.
 - Rendering speed on a Retina display (measured on a 1× display only).
 
-There are no automated tests yet.
+The macOS app has no automated tests.
+
+The web rebuild is at milestone M0: there is no editor yet. What exists is the project scaffolding and the text engine (road names shaped from font bytes and set along a path, including right-to-left scripts), with unit tests. The sample page was checked in Chromium only.
 
 ## Data and licences
 

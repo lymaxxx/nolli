@@ -4,8 +4,9 @@ A wayfinding-map design tool. Read `README.md` first, then `docs/WEB_REBUILD.md`
 
 ## Layout
 
-- `macos/` is the working SwiftUI app. `web/` is where the rebuild goes. `docs/` holds the plans and references.
+- `macos/` is the working SwiftUI app. `web/` is the rebuild (an npm workspace; see `web/README.md`). `docs/` holds the plans and references.
 - Build the Mac app with `macos/scripts/build.sh`. It falls back to `swiftc` when the Xcode licence is not accepted.
+- In `web/`: `npm test`, `npm run lint`, `npm run build`. CI runs all three on every push that touches `web/`.
 
 ## Rules that matter
 
@@ -13,6 +14,9 @@ A wayfinding-map design tool. Read `README.md` first, then `docs/WEB_REBUILD.md`
 - **The `.nolli` format is a contract.** The web app must open files saved by the macOS app (`docs/PROJECT_FORMAT.md`). Never rename or remove a field without a migration. New fields need a default, because the loader fills missing keys (`ProjectManager.upgraded` in Swift).
 - **Mac project file is hand-maintained.** A new `.swift` file must also be added to `macos/Nolli.xcodeproj/project.pbxproj` (four places: build file, file reference, group, sources phase).
 - **Use test copies of user projects.** Never edit or commit `.nolli` files from a user's folder; they are gitignored on purpose.
+- **`web/packages/core` has no DOM and no Node APIs.** It must run in a worker, in tests and from a command line. Drawing to a canvas belongs in `web/apps/editor`.
+- **Text is never drawn with the browser's text engine on the map.** Shape it with `core/text` and fill glyph outlines, so screen, SVG and PDF agree.
+- **The web UI follows `docs/design/redesign/`.** Read its `README.md` for where the web app departs from the brief.
 - Don't recreate another product's name, art or code. This is an original tool that happens to follow Figma-like interaction conventions.
 
 ## Architecture in five lines (macOS; the web app should keep the same shape)

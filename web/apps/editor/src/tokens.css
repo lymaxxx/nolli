@@ -1,0 +1,60 @@
+/* Nolli redesign tokens for the web app.
+   Light values are converted from DesignTokens.swift (which came from the .pen file).
+   Dark values are PROVISIONAL: the redesign has no dark mode yet, so these were chosen
+   to keep the same roles and have not been reviewed by a designer or contrast-checked. */
+
+:root {
+  --accent: #2563eb;
+  --accent-soft: #eaf1ff;
+  --warn-bg: #fff6e5;
+  --warn-fg: #9a5b00;
+  --ok: #16a34a;
+  --destructive: #e7000b;
+  --hairline: #ececee;
+  --border: #e5e5e5;
+  --field: #f4f4f5;
+  --text: #18181b;
+  --text-2: #71717a;
+  --text-3: #a1a1aa;
+  --panel: #ffffff;
+
+  --left-panel-width: 256px;
+  --right-panel-width: 300px;
+  --toolbar-height: 52px;
+  --status-bar-height: 24px;
+  --layer-row-height: 34px;
+  --control-height: 26px;
+  --property-label-width: 70px;
+  --section-padding-x: 14px;
+  --section-padding-y: 12px;
+  --radius-control: 6px;
+  --radius-row: 8px;
+  --radius-card: 10px;
+  --radius-sheet: 14px;
+  --sheet-width: 420px;
+
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 12px;
+  --font-row-title: 13px;
+  --font-inspector-title: 14px;
+  --font-caption: 11px;
+  --font-overline: 11px; /* semibold, uppercase, letter-spacing 0.6px */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #5b8def;
+    --accent-soft: #1c2a4a;
+    --warn-bg: #3a2c10;
+    --warn-fg: #f5c26b;
+    --ok: #4ade80;
+    --destructive: #ff5a5f;
+    --hairline: #2a2a2e;
+    --border: #333338;
+    --field: #27272a;
+    --text: #f4f4f5;
+    --text-2: #a1a1aa;
+    --text-3: #71717a;
+    --panel: #18181b;
+  }
+}
