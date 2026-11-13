@@ -7,7 +7,7 @@ final class NolliAppDelegate: NSObject, NSApplicationDelegate {
     /// Finder double-click / "Open With". The window may not exist yet at launch.
     @MainActor
     func application(_ application: NSApplication, open urls: [URL]) {
-        guard let url = urls.first(where: { $0.pathExtension == "nolli" }) else { return }
+        guard let url = urls.first(where: { AppState.projectExtensions.contains($0.pathExtension.lowercased()) }) else { return }
         func attempt(_ tries: Int) {
             if let state = AppState.active {
                 if state.confirmDiscardChanges("Save changes before opening another project?") { state.open(url: url) }

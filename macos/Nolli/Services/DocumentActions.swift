@@ -10,6 +10,12 @@ extension AppState {
     // MARK: Project
 
     private static var projectType: UTType { UTType(filenameExtension: "nolli") ?? .json }
+    /// Projects saved before the app was renamed use `.mapcraft`. The contents are
+    /// the same format, so they must always open; new files are saved as `.nolli`.
+    static let projectExtensions = ["nolli", "mapcraft"]
+    private static var openableTypes: [UTType] {
+        projectExtensions.map { UTType(filenameExtension: $0) ?? .json }
+    }
 
     /// Returns false if the user cancelled. Asks only when there's unsaved work.
     func confirmDiscardChanges(_ message: String) -> Bool {
@@ -46,7 +52,7 @@ extension AppState {
     func openProject() {
         guard confirmDiscardChanges("Save changes before opening another project?") else { return }
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [Self.projectType]
+        panel.allowedContentTypes = Self.openableTypes
         guard panel.runModal() == .OK, let url = panel.url else { return }
         open(url: url)
     }
@@ -83,7 +89,9 @@ extension AppState {
     func saveProjectAs() -> Bool {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [Self.projectType]
-        panel.nameFieldStringValue = projectURL?.lastPathComponent ?? "Untitled.nolli"
+        // A project opened from a `.mapcraft` file is offered under the new extension.
+        let baseName = projectURL?.deletingPathExtension().lastPathComponent ?? "Untitled"
+        panel.nameFieldStringValue = baseName + ".nolli"
         guard panel.runModal() == .OK, let url = panel.url else { return false }
         do {
             try ProjectManager.shared.save(appState: self, to: url)

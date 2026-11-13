@@ -24,3 +24,4 @@ desktop/release/
 
 # Local project files and exports are the user's data, not source
 *.nolli
+*.mapcraft
