@@ -3,6 +3,8 @@ import {
   buildPointLabel,
   compileScene,
   computeLabelLayout,
+  FontRegistry,
+  LoadedFont,
   OSM_STANDARD,
   projectionOf,
   TextMeasurer,
@@ -14,7 +16,7 @@ import {
 } from '@nolli/core';
 import { drawLabels } from './drawLabels';
 import { drawScene } from './drawScene';
-import { loadFontProvider } from './fonts';
+import { loadFallbackFonts } from './fonts';
 import { drawTiles } from './drawTiles';
 import type { MainMessage, WorkerMessage } from './messages';
 import { surfaceMetrics } from './surface';
@@ -79,19 +81,35 @@ function drawNow(epoch: number | null): void {
   });
 }
 
-let fontProvider: ReturnType<typeof loadFontProvider> | null = null;
+let fallbackFonts: ReturnType<typeof loadFallbackFonts> | null = null;
+let fontFiles: { family: string; style: string; data: ArrayBuffer }[] = [];
+let layers: LayerSnapshot[] = [];
+let layersBaseZoom = 15;
+
+/** The registry for the project's font files, with the built-in fonts behind it. */
+async function currentRegistry(): Promise<FontRegistry> {
+  fallbackFonts ??= loadFallbackFonts();
+  const registry = new FontRegistry(await fallbackFonts);
+  for (const file of fontFiles) {
+    try {
+      registry.add(file.family, file.style, new LoadedFont(file.data));
+    } catch {
+      // A file that is not a usable font is ignored; the family falls back.
+    }
+  }
+  return registry;
+}
 
 /**
- * Places labels for a project and turns them into glyphs. Runs after the first
- * draw so the map appears at once and the names follow.
+ * Places labels for the current project and turns them into glyphs. Runs after
+ * the first draw so the map appears at once and the names follow.
  */
-async function buildLabels(layers: LayerSnapshot[], baseZoom: number, token: number): Promise<void> {
+async function buildLabels(token: number): Promise<void> {
   try {
-    fontProvider ??= loadFontProvider();
-    const provider = await fontProvider;
+    const registry = await currentRegistry();
     if (token !== labelToken || !scene) return;
     const started = performance.now();
-    const layout = computeLabelLayout(layers, baseZoom, 1, new TextMeasurer(provider));
+    const layout = computeLabelLayout(layers, layersBaseZoom, 1, new TextMeasurer(registry));
     const origin = scene.origin;
     const built: LabelGeometry[] = [];
     const seen = new Map<string, number>();
@@ -151,9 +169,11 @@ scope.addEventListener('message', (event) => {
         scene = compileScene(message.layers, message.baseZoom);
         labels = [];
         labelMs = 0;
+        layers = message.layers;
+        layersBaseZoom = message.baseZoom;
         labelToken += 1;
         drawNow(null);
-        void buildLabels(message.layers, message.baseZoom, labelToken);
+        void buildLabels(labelToken);
       } catch (error) {
         scene = null;
         scope.postMessage({
@@ -171,7 +191,17 @@ scope.addEventListener('message', (event) => {
       scheduleRedraw();
       break;
     }
+    case 'fonts': {
+      fontFiles = message.fonts;
+      if (scene) {
+        // Keep the old labels on screen until the new ones are ready.
+        labelToken += 1;
+        void buildLabels(labelToken);
+      }
+      break;
+    }
     case 'clear': {
+      layers = [];
       labelToken += 1;
       labels = [];
       scene = null;

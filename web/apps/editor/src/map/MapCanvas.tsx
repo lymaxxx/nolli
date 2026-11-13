@@ -41,9 +41,12 @@ interface PointerPosition {
  */
 export function MapCanvas({
   project,
+  fonts = [],
   onCameraChange,
 }: {
   project: ProjectSnapshot | null;
+  /** Font files for project fonts; road names are set in these where they match. */
+  fonts?: readonly { family: string; style: string; data: ArrayBuffer }[];
   onCameraChange?: (camera: CameraPose) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -433,6 +436,15 @@ export function MapCanvas({
     } satisfies MainMessage);
     requestDraw();
   }, [project, requestDraw]);
+
+  // Send font files to the worker. Each send carries copies, so the page keeps its own bytes.
+  useEffect(() => {
+    const copies = fonts.map((font) => ({ family: font.family, style: font.style, data: font.data.slice(0) }));
+    postRef.current(
+      { type: 'fonts', fonts: copies } satisfies MainMessage,
+      copies.map((font) => font.data),
+    );
+  }, [fonts]);
 
   const zoomBy = (delta: number) => {
     const camera = cameraRef.current;

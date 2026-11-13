@@ -128,3 +128,12 @@ export {
   type LayoutComparison,
   type LayoutDump,
 } from './layout/compare';
+export {
+  FontRegistry,
+  fontsUsed,
+  isItalicStyle,
+  matchFont,
+  weightValue,
+  type FontMatch,
+  type FontRequest,
+} from './text/registry';

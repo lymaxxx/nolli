@@ -1,4 +1,4 @@
-import { LoadedFont, type FontProvider } from '@nolli/core';
+import { LoadedFont } from '@nolli/core';
 import notoSansArabicBoldUrl from '@expo-google-fonts/noto-sans-arabic/700Bold/NotoSansArabic_700Bold.ttf?url';
 import notoSansArabicUrl from '@expo-google-fonts/noto-sans-arabic/400Regular/NotoSansArabic_400Regular.ttf?url';
 import notoSansBoldUrl from '@expo-google-fonts/noto-sans/700Bold/NotoSans_700Bold.ttf?url';
@@ -11,26 +11,16 @@ async function fetchFont(url: string): Promise<LoadedFont> {
 }
 
 /**
- * Placeholder font handling until the font-mapping dialog exists.
- *
- * Projects name fonts such as "Helvetica Neue" or "Onsite Standard TRIAL" that
- * a browser cannot supply, so every project font resolves to Noto Sans with
- * Noto Sans Arabic behind it, in regular or bold. Labels therefore will not
- * match the macOS app's letterforms or widths yet; only the placement rules are
- * the same.
+ * The built-in fallback fonts: Noto Sans, with Noto Sans Arabic behind it, in
+ * regular and bold. A project font the app has no file for is drawn with these,
+ * and they follow every matched font so scripts it lacks are still drawn.
  */
-export async function loadFontProvider(): Promise<FontProvider> {
+export async function loadFallbackFonts(): Promise<{ regular: LoadedFont[]; bold: LoadedFont[] }> {
   const [regular, bold, arabicRegular, arabicBold] = await Promise.all([
     fetchFont(notoSansUrl),
     fetchFont(notoSansBoldUrl),
     fetchFont(notoSansArabicUrl),
     fetchFont(notoSansArabicBoldUrl),
   ]);
-  const regularChain = [regular, arabicRegular];
-  const boldChain = [bold, arabicBold];
-  return {
-    fontsFor(_fontName, fontWeight) {
-      return /bold|black|heavy|demi/i.test(fontWeight) ? boldChain : regularChain;
-    },
-  };
+  return { regular: [regular, arabicRegular], bold: [bold, arabicBold] };
 }

@@ -387,3 +387,52 @@ button {
     border-left: 0;
   }
 }
+
+.font-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--nolli-pad-y) var(--nolli-pad-x);
+  border-top: 1px solid var(--nolli-hairline);
+}
+
+.font-panel h2 {
+  margin: 0;
+  font-size: var(--nolli-fs-row);
+  font-weight: 600;
+}
+
+.font-panel ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.font-panel li {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border-radius: var(--nolli-radius-control);
+  background: var(--nolli-field);
+}
+
+.font-panel li[data-status='fallback'] {
+  background: var(--nolli-warn-bg);
+  color: var(--nolli-warn-fg);
+}
+
+.font-panel .font-name span,
+.font-panel .font-status {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.font-panel .font-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}

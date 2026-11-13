@@ -1,10 +1,23 @@
 import {
+  fontsUsed,
   loadProject,
   serializeProject,
   type CameraPose,
+  type FontRequest,
   type ProjectSnapshot,
 } from '@nolli/core';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FontPanel } from './FontPanel';
+import {
+  canReadInstalledFonts,
+  deleteSavedFont,
+  fontKey,
+  installedFontsAllowed,
+  loadSavedFonts,
+  readInstalledFonts,
+  saveFont,
+  type FontEntry,
+} from './fontStore';
 import { MapCanvas } from './map/MapCanvas';
 import { TextSpike } from './TextSpike';
 import {
@@ -85,9 +98,75 @@ export function ProjectFiles() {
   const [busy, setBusy] = useState(false);
   const [showSpike, setShowSpike] = useState(false);
   const cameraRef = useRef<CameraPose | null>(null);
+  const [fontEntries, setFontEntries] = useState<FontEntry[]>([]);
+  const requests = useMemo<FontRequest[]>(() => (project ? fontsUsed(project.layers) : []), [project]);
 
   const handleCameraChange = useCallback((camera: CameraPose) => {
     cameraRef.current = camera;
+  }, []);
+
+  /** Adds or replaces font entries; a later entry for the same face wins. */
+  const addFonts = useCallback((added: FontEntry[]) => {
+    setFontEntries((current) => {
+      const byKey = new Map(current.map((entry) => [fontKey(entry.family, entry.style), entry]));
+      for (const entry of added) byKey.set(fontKey(entry.family, entry.style), entry);
+      return [...byKey.values()];
+    });
+  }, []);
+
+  // Files the user chose in an earlier visit come back on their own.
+  useEffect(() => {
+    void loadSavedFonts().then(addFonts);
+  }, [addFonts]);
+
+  const findInstalledFonts = useCallback(async () => {
+    setBusy(true);
+    try {
+      const found = await readInstalledFonts(requests);
+      addFonts(found);
+      setNotice({
+        kind: found.length > 0 ? 'ok' : 'error',
+        text:
+          found.length > 0
+            ? `Found ${found.length} installed font file${found.length === 1 ? '' : 's'}.`
+            : 'None of this project\'s fonts are installed on this computer.',
+      });
+    } catch (error) {
+      setNotice({ kind: 'error', text: `Installed fonts could not be read: ${describeError(error)}` });
+    } finally {
+      setBusy(false);
+    }
+  }, [addFonts, requests]);
+
+  // If the user has already allowed font access, use it without another click.
+  useEffect(() => {
+    if (requests.length === 0 || !canReadInstalledFonts()) return;
+    let cancelled = false;
+    void installedFontsAllowed().then((allowed) => {
+      if (allowed && !cancelled) void readInstalledFonts(requests).then((found) => !cancelled && addFonts(found));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [requests, addFonts]);
+
+  const chooseFontFile = useCallback(
+    async (request: FontRequest, file: File) => {
+      const entry: FontEntry = {
+        family: request.family,
+        style: request.style,
+        source: 'file',
+        data: await file.arrayBuffer(),
+      };
+      addFonts([entry]);
+      await saveFont(entry);
+    },
+    [addFonts],
+  );
+
+  const removeFontFile = useCallback(async (entry: FontEntry) => {
+    setFontEntries((current) => current.filter((candidate) => candidate !== entry));
+    await deleteSavedFont(entry.family, entry.style);
   }, []);
 
   const loadFile = useCallback(async (next: OpenedProjectFile) => {
@@ -159,7 +238,7 @@ export function ProjectFiles() {
   return (
     <main className="workspace">
       <div className="workspace-map">
-        <MapCanvas project={project ?? null} onCameraChange={handleCameraChange} />
+        <MapCanvas project={project ?? null} fonts={fontEntries} onCameraChange={handleCameraChange} />
       </div>
 
       <aside className="workspace-panel" aria-label="Project">
@@ -195,6 +274,15 @@ export function ProjectFiles() {
         ) : (
           <p className="empty">No project open.</p>
         )}
+
+        <FontPanel
+          requests={requests}
+          entries={fontEntries}
+          busy={busy}
+          onFindInstalled={() => void findInstalledFonts()}
+          onChooseFile={(request, file) => void chooseFontFile(request, file)}
+          onRemove={(entry) => void removeFontFile(entry)}
+        />
 
         <section className="spike-toggle">
           <button type="button" className="link-button" onClick={() => setShowSpike(!showSpike)}>

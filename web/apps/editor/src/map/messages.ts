@@ -15,6 +15,11 @@ export type MainMessage =
       tileOpacity: number;
       source: RasterXYZSource;
     }
+  | {
+      /** Font files for project fonts. Replaces any sent before; labels are placed again. */
+      type: 'fonts';
+      fonts: { family: string; style: string; data: ArrayBuffer }[];
+    }
   | { type: 'clear' }
   | { type: 'draw'; camera: CameraPose; epoch: number };
 
