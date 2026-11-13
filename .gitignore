@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+*.swp
+
+# Xcode / Swift
+macos/build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+.build/
+
+# Web (when web/ exists)
+node_modules/
+dist/
+.vite/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+
+# Desktop wrappers (when they exist)
+desktop/out/
+desktop/release/
+
+# Local project files and exports are the user's data, not source
+*.nolli

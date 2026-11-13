@@ -1,0 +1,452 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2240081919F848788ADA9DDF /* ColorPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CECE7BF72B4414A02427A7 /* ColorPanel.swift */; };
+		4BC9E33EE6B244DFB5DAA6F8 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960ABE12156D42DD8D444D4D /* Theme.swift */; };
+		6C285FA1AD954FAD8E24DD63 /* MapSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923C139F9CF349E8BA636D43 /* MapSurfaceView.swift */; };
+		ECE851A78C154B21B4E438E3 /* SceneRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1DFC2D56A6A49CDB51C672E /* SceneRenderer.swift */; };
+		673987C5CE304E198470ECB4 /* DocumentActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350F934E811D4F6A9E06F624 /* DocumentActions.swift */; };
+		8E337C7D1C444B98921F0F78 /* TileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30700E196CAA4F2EB48FA55D /* TileStore.swift */; };
+		73F130CF838B49DB9C87DAAA /* PolygonCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 219D8DEA0B0A445FB4E5820B /* PolygonCenter.swift */; };
+		DA046EA043184E24909A98E2 /* MapCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CD5426BF234CD4BCEA9C72 /* MapCamera.swift */; };
+		01326B0F3D8A0CEB5332ED40 /* OSMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BEEF231C51C2EAD2F2182B /* OSMFeature.swift */; };
+		02BA80F5E2B11E56C1ACE27A /* NolliApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0CE7683820CCD34710A3303 /* NolliApp.swift */; };
+		AA11223344556677889900AA /* ComponentsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11223344556677889900BB /* ComponentsPanel.swift */; };
+		BB11223344556677889900AA /* LabelInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11223344556677889900BB /* LabelInspector.swift */; };
+		CC11223344556677889900AA /* SymbolInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11223344556677889900BB /* SymbolInspector.swift */; };
+		EE112233445566778899AACC /* MapProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE112233445566778899AABB /* MapProjection.swift */; };
+		AB12CD34EF5600112233AA01 /* LabelRendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12CD34EF5600112233AA02 /* LabelRendering.swift */; };
+		E1F2A3B4C5D6E1F2A3B4C5D6 /* SignArtworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D6E1F2A3B4C5D7 /* SignArtworkView.swift */; };
+		F1A2B3C4D5E6F1A2B3C4D5E6 /* SignExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F1A2B3C4D5E7 /* SignExporter.swift */; };
+		B1C2D3E4F5A6B1C2D3E4F5A6 /* SignsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B1C2D3E4F5A7 /* SignsPanel.swift */; };
+		D1E2F3A4B5C6D1E2F3A4B5C6 /* SignOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D1E2F3A4B5C7 /* SignOutput.swift */; };
+		4144678D1AABE9C272635F4D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C6A3CCF9430CC03BF93E2A /* SettingsView.swift */; };
+		414C6DD47186F4782549FA81 /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = F787B0A354DCA01A0A0B093C /* Styles.swift */; };
+		461CA1351B4C42E516F39AC0 /* OSMFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32DAD72518FB3138A997E155 /* OSMFetcher.swift */; };
+		488B83B96519C84FB4C414F2 /* SVGExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEFF5216C8A62CD0229F390 /* SVGExporter.swift */; };
+		4E0D3F88C950E8374B4016D7 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8351E867F8320FECABE51D71 /* AppState.swift */; };
+		6A3929100D732B97335DA4B5 /* LayerPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFD3F2490C708705A9911182 /* LayerPanel.swift */; };
+		7675EB55F4681A6C09C2A8BD /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A036927628DB8BAC655F5A70 /* ExportSheet.swift */; };
+		85448DEACFBAA68928C5DB22 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 105ED4C52EFBB4DC98B02C10 /* PDFExporter.swift */; };
+		86D1C410049D489E9F0E5308 /* GeocoderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7450144071473557630E02DE /* GeocoderService.swift */; };
+		9337F74E516C707D4F214663 /* MapLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C9B520FFCCF8C6BA9F2465 /* MapLayer.swift */; };
+		B4E76055B2E958CBBC4327B7 /* ProjectManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0128583A886D57A29835DB46 /* ProjectManager.swift */; };
+		BB6D2BB840D8215D79072031 /* BoundingBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F818C1F7033E2402F8F2224 /* BoundingBox.swift */; };
+		D99E9285EA8A0E675DF347AD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AD3FBD05A38ACA3DD4BF46 /* ContentView.swift */; };
+		F183371D86C4D7EA3000A084 /* StyleInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138111EEBA0288DABB590611 /* StyleInspector.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		80CECE7BF72B4414A02427A7 /* ColorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPanel.swift; sourceTree = "<group>"; };
+		960ABE12156D42DD8D444D4D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		923C139F9CF349E8BA636D43 /* MapSurfaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSurfaceView.swift; sourceTree = "<group>"; };
+		D1DFC2D56A6A49CDB51C672E /* SceneRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneRenderer.swift; sourceTree = "<group>"; };
+		350F934E811D4F6A9E06F624 /* DocumentActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentActions.swift; sourceTree = "<group>"; };
+		30700E196CAA4F2EB48FA55D /* TileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileStore.swift; sourceTree = "<group>"; };
+		219D8DEA0B0A445FB4E5820B /* PolygonCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonCenter.swift; sourceTree = "<group>"; };
+		B8CD5426BF234CD4BCEA9C72 /* MapCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapCamera.swift; sourceTree = "<group>"; };
+		0128583A886D57A29835DB46 /* ProjectManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectManager.swift; sourceTree = "<group>"; };
+		07C6A3CCF9430CC03BF93E2A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		105ED4C52EFBB4DC98B02C10 /* PDFExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExporter.swift; sourceTree = "<group>"; };
+		138111EEBA0288DABB590611 /* StyleInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleInspector.swift; sourceTree = "<group>"; };
+		1E4AB01C85CE7E1F5DC72FFC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		2CB69F17117378614F4C1CA2 /* Nolli.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nolli.entitlements; sourceTree = "<group>"; };
+		32DAD72518FB3138A997E155 /* OSMFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSMFetcher.swift; sourceTree = "<group>"; };
+		3BD3D6F6027659D3D62032F5 /* Nolli.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nolli.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA11223344556677889900BB /* ComponentsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentsPanel.swift; sourceTree = "<group>"; };
+		BB11223344556677889900BB /* LabelInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelInspector.swift; sourceTree = "<group>"; };
+		CC11223344556677889900BB /* SymbolInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymbolInspector.swift; sourceTree = "<group>"; };
+		EE112233445566778899AABB /* MapProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapProjection.swift; sourceTree = "<group>"; };
+		AB12CD34EF5600112233AA02 /* LabelRendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelRendering.swift; sourceTree = "<group>"; };
+		E1F2A3B4C5D6E1F2A3B4C5D7 /* SignArtworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignArtworkView.swift; sourceTree = "<group>"; };
+		F1A2B3C4D5E6F1A2B3C4D5E7 /* SignExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignExporter.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5A6B1C2D3E4F5A7 /* SignsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignsPanel.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C6D1E2F3A4B5C7 /* SignOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignOutput.swift; sourceTree = "<group>"; };
+		64C9B520FFCCF8C6BA9F2465 /* MapLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapLayer.swift; sourceTree = "<group>"; };
+		7450144071473557630E02DE /* GeocoderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeocoderService.swift; sourceTree = "<group>"; };
+		8351E867F8320FECABE51D71 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		8F818C1F7033E2402F8F2224 /* BoundingBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundingBox.swift; sourceTree = "<group>"; };
+		93BEEF231C51C2EAD2F2182B /* OSMFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSMFeature.swift; sourceTree = "<group>"; };
+		A036927628DB8BAC655F5A70 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
+		B0CE7683820CCD34710A3303 /* NolliApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NolliApp.swift; sourceTree = "<group>"; };
+		C1AD3FBD05A38ACA3DD4BF46 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		DFD3F2490C708705A9911182 /* LayerPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerPanel.swift; sourceTree = "<group>"; };
+		F787B0A354DCA01A0A0B093C /* Styles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Styles.swift; sourceTree = "<group>"; };
+		FCEFF5216C8A62CD0229F390 /* SVGExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGExporter.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		46B7FE7DC433C40AA946189C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3BD3D6F6027659D3D62032F5 /* Nolli.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8A40CE09D173BA2EE6D7E27C /* Nolli */ = {
+			isa = PBXGroup;
+			children = (
+				B0CE7683820CCD34710A3303 /* NolliApp.swift */,
+				927D1D7660284692A67B0F60 /* Models */,
+				D8342E89814983F827C4EBF6 /* Resources */,
+				985E1DAA25B263744981A609 /* Services */,
+				8E767A3772A859F59AFF7C60 /* Views */,
+			);
+			path = Nolli;
+			sourceTree = "<group>";
+		};
+		8E767A3772A859F59AFF7C60 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C1AD3FBD05A38ACA3DD4BF46 /* ContentView.swift */,
+				AA11223344556677889900BB /* ComponentsPanel.swift */,
+				A036927628DB8BAC655F5A70 /* ExportSheet.swift */,
+				BB11223344556677889900BB /* LabelInspector.swift */,
+				DFD3F2490C708705A9911182 /* LayerPanel.swift */,
+				07C6A3CCF9430CC03BF93E2A /* SettingsView.swift */,
+				138111EEBA0288DABB590611 /* StyleInspector.swift */,
+				CC11223344556677889900BB /* SymbolInspector.swift */,
+				EE112233445566778899AABB /* MapProjection.swift */,
+				AB12CD34EF5600112233AA02 /* LabelRendering.swift */,
+				80CECE7BF72B4414A02427A7 /* ColorPanel.swift */,
+				960ABE12156D42DD8D444D4D /* Theme.swift */,
+				923C139F9CF349E8BA636D43 /* MapSurfaceView.swift */,
+				D1DFC2D56A6A49CDB51C672E /* SceneRenderer.swift */,
+				B1C2D3E4F5A6B1C2D3E4F5A7 /* SignsPanel.swift */,
+				E1F2A3B4C5D6E1F2A3B4C5D7 /* SignArtworkView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		927D1D7660284692A67B0F60 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				8351E867F8320FECABE51D71 /* AppState.swift */,
+				219D8DEA0B0A445FB4E5820B /* PolygonCenter.swift */,
+				B8CD5426BF234CD4BCEA9C72 /* MapCamera.swift */,
+				8F818C1F7033E2402F8F2224 /* BoundingBox.swift */,
+				64C9B520FFCCF8C6BA9F2465 /* MapLayer.swift */,
+				93BEEF231C51C2EAD2F2182B /* OSMFeature.swift */,
+				F787B0A354DCA01A0A0B093C /* Styles.swift */,
+				D1E2F3A4B5C6D1E2F3A4B5C7 /* SignOutput.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		985E1DAA25B263744981A609 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				7450144071473557630E02DE /* GeocoderService.swift */,
+				32DAD72518FB3138A997E155 /* OSMFetcher.swift */,
+				105ED4C52EFBB4DC98B02C10 /* PDFExporter.swift */,
+				0128583A886D57A29835DB46 /* ProjectManager.swift */,
+				350F934E811D4F6A9E06F624 /* DocumentActions.swift */,
+				30700E196CAA4F2EB48FA55D /* TileStore.swift */,
+				FCEFF5216C8A62CD0229F390 /* SVGExporter.swift */,
+				F1A2B3C4D5E6F1A2B3C4D5E7 /* SignExporter.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		D8342E89814983F827C4EBF6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1E4AB01C85CE7E1F5DC72FFC /* Info.plist */,
+				2CB69F17117378614F4C1CA2 /* Nolli.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		DFA893265F7B747B2C2551EE = {
+			isa = PBXGroup;
+			children = (
+				8A40CE09D173BA2EE6D7E27C /* Nolli */,
+				46B7FE7DC433C40AA946189C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8BF0A2886DC9AA4BD3EFBBA7 /* Nolli */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8C38B22D846CB0C9CF3CD242 /* Build configuration list for PBXNativeTarget "Nolli" */;
+			buildPhases = (
+				0E4EA8F0E0F08148FADF54FF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Nolli;
+			packageProductDependencies = (
+			);
+			productName = Nolli;
+			productReference = 3BD3D6F6027659D3D62032F5 /* Nolli.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		122A5FC9C30D897922A3C8A1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					8BF0A2886DC9AA4BD3EFBBA7 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 0A752CAFD6B0DF6A37E4CF6A /* Build configuration list for PBXProject "Nolli" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DFA893265F7B747B2C2551EE;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 46B7FE7DC433C40AA946189C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8BF0A2886DC9AA4BD3EFBBA7 /* Nolli */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0E4EA8F0E0F08148FADF54FF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4E0D3F88C950E8374B4016D7 /* AppState.swift in Sources */,
+				73F130CF838B49DB9C87DAAA /* PolygonCenter.swift in Sources */,
+				DA046EA043184E24909A98E2 /* MapCamera.swift in Sources */,
+				BB6D2BB840D8215D79072031 /* BoundingBox.swift in Sources */,
+				D99E9285EA8A0E675DF347AD /* ContentView.swift in Sources */,
+				7675EB55F4681A6C09C2A8BD /* ExportSheet.swift in Sources */,
+				86D1C410049D489E9F0E5308 /* GeocoderService.swift in Sources */,
+				AA11223344556677889900AA /* ComponentsPanel.swift in Sources */,
+				BB11223344556677889900AA /* LabelInspector.swift in Sources */,
+				6A3929100D732B97335DA4B5 /* LayerPanel.swift in Sources */,
+				02BA80F5E2B11E56C1ACE27A /* NolliApp.swift in Sources */,
+				9337F74E516C707D4F214663 /* MapLayer.swift in Sources */,
+				01326B0F3D8A0CEB5332ED40 /* OSMFeature.swift in Sources */,
+				461CA1351B4C42E516F39AC0 /* OSMFetcher.swift in Sources */,
+				85448DEACFBAA68928C5DB22 /* PDFExporter.swift in Sources */,
+				B4E76055B2E958CBBC4327B7 /* ProjectManager.swift in Sources */,
+				673987C5CE304E198470ECB4 /* DocumentActions.swift in Sources */,
+				8E337C7D1C444B98921F0F78 /* TileStore.swift in Sources */,
+				488B83B96519C84FB4C414F2 /* SVGExporter.swift in Sources */,
+				4144678D1AABE9C272635F4D /* SettingsView.swift in Sources */,
+				F183371D86C4D7EA3000A084 /* StyleInspector.swift in Sources */,
+				CC11223344556677889900AA /* SymbolInspector.swift in Sources */,
+				EE112233445566778899AACC /* MapProjection.swift in Sources */,
+				AB12CD34EF5600112233AA01 /* LabelRendering.swift in Sources */,
+				2240081919F848788ADA9DDF /* ColorPanel.swift in Sources */,
+				4BC9E33EE6B244DFB5DAA6F8 /* Theme.swift in Sources */,
+				6C285FA1AD954FAD8E24DD63 /* MapSurfaceView.swift in Sources */,
+				ECE851A78C154B21B4E438E3 /* SceneRenderer.swift in Sources */,
+				B1C2D3E4F5A6B1C2D3E4F5A6 /* SignsPanel.swift in Sources */,
+				D1E2F3A4B5C6D1E2F3A4B5C6 /* SignOutput.swift in Sources */,
+				E1F2A3B4C5D6E1F2A3B4C5D6 /* SignArtworkView.swift in Sources */,
+				F1A2B3C4D5E6F1A2B3C4D5E6 /* SignExporter.swift in Sources */,
+				414C6DD47186F4782549FA81 /* Styles.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2A1D11A916DC99125957316F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Nolli/Resources/Nolli.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Nolli/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.nolli.Nolli;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		88774EA8A96BBDA7E3E63853 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Nolli/Resources/Nolli.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Nolli/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.nolli.Nolli;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		89D8B45D83E22A11D2B1E8FD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		A36E0DBC1B52C4CF70464831 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0A752CAFD6B0DF6A37E4CF6A /* Build configuration list for PBXProject "Nolli" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				89D8B45D83E22A11D2B1E8FD /* Debug */,
+				A36E0DBC1B52C4CF70464831 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8C38B22D846CB0C9CF3CD242 /* Build configuration list for PBXNativeTarget "Nolli" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				88774EA8A96BBDA7E3E63853 /* Debug */,
+				2A1D11A916DC99125957316F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 122A5FC9C30D897922A3C8A1 /* Project object */;
+}

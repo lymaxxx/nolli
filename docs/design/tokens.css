@@ -1,0 +1,32 @@
+:root{
+  --color-panel:#FFFFFF;
+  --color-field:#F3F3F3;
+  --color-hairline:#EFEFEF;
+  --color-selected-row:#F9E5E6;
+  --color-accent:#CC4542;
+  --color-accent-pressed:#BD4648;
+  --color-slider-track:#E7E7E7;
+  --color-text-primary:#1A1A1A;
+  --color-text-secondary:#919191;
+  --color-text-tertiary:#B8B8B8;
+  --color-map-label:#333333;
+  --color-map-selection-dot:#D93A3A;
+  --color-map-bbox-stroke:#D93A3A;
+  --color-scrim:rgba(0,0,0,0.20);
+  --size-left-panel-width:256px;
+  --size-right-panel-width:300px;
+  --size-top-bar-height:46px;
+  --size-status-bar-height:22px;
+  --size-layer-row-height:28px;
+  --size-control-height:24px;
+  --size-property-label-width:68px;
+  --size-section-padding-x:12px;
+  --size-section-padding-y:12px;
+  --size-section-gap:8px;
+  --size-corner-radius-field:5px;
+  --size-corner-radius-sheet:14px;
+  --size-hairline:1px;
+  --size-sheet-width:420px;
+  --size-toolbar-button:30px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+}
