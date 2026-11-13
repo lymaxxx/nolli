@@ -46,7 +46,7 @@ What has **not** been checked in the macOS app:
 
 The macOS app has no automated tests.
 
-The web rebuild is at milestone M0: there is no editor yet. What exists is the project scaffolding and the text engine (road names shaped from font bytes and set along a path, including right-to-left scripts), with unit tests. The sample page was checked in Chromium only.
+The web rebuild has completed milestones M0–M3. The thin Electron shell opens `.nolli` and legacy `.mapcraft` projects, saves `.nolli`, and draws the project on a live map over OpenStreetMap tiles. One camera drives tiles, vectors and markers, so panning, zooming and rotating cannot pull them apart; saving writes the current camera back into the file. There is still no layer editing or label engine: the page is a map-first project shell, with the text-engine sample (road names shaped from font bytes and set along a path, including right-to-left scripts) available from it. The browser page was checked in Chromium, and the Electron shell was driven on macOS with Playwright against the real project.
 
 ## Data and licences
 

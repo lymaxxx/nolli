@@ -2,7 +2,7 @@
 
 Goal: a Figma-style editor in the browser with the features of the macOS app, wrapped for Mac, Windows and Linux, aimed at graphic and wayfinding designers working on urban areas and small public spaces. Features beyond parity with the macOS app, and Illustrator integration, are in [ROADMAP.md](ROADMAP.md).
 
-**Status:** milestone M0 is done (see "Milestones"). Everything after it is a plan.
+**Status:** milestones M0, M1, M2 and M3 are done. The thin Electron shell opens `.nolli` and legacy `.mapcraft` projects, saves `.nolli`, and draws the project on a live map over OpenStreetMap tiles. The camera, tiles, vectors and markers share one transform, so they cannot drift. Everything after M3 is a plan.
 
 ## Goals
 
@@ -23,6 +23,7 @@ Not in version 1: accounts, cloud storage, real-time collaboration. The document
 | Text | Shaped from font bytes with HarfBuzz; see "Text" |
 | Tiles | OpenStreetMap for now, behind an interface that allows other providers and formats; see "Tiles" |
 | Storage | Local-first: files on disk, no server |
+| Legacy files | Existing `.mapcraft` documents use the same JSON loader. File extensions are a shell concern, not a `core` concern. The desktop Open dialog accepts them; Save creates `.nolli` files |
 | Edit mode | No Save / Revert All. Edits apply at once and rely on undo, with reset per item and per layer |
 | Roads in the layer list | One row, with road types as chips in the inspector |
 
@@ -36,9 +37,13 @@ Still open: a licence for the repository, and code signing (Apple Developer acco
 |---|---|---|
 | `packages/core` | Model, project load and save, projection, camera, geometry, text, label layout, scene, exporters | No DOM and no Node APIs (enforced by its TypeScript config and a lint rule), so it runs in the page, a worker, tests and a command line |
 | `apps/editor` | React UI and the canvas | |
-| `apps/desktop` | Electron shell | Thin: file open and save, `.nolli` association, font access |
+| `apps/desktop` | Electron shell | Thin: project open and save now; installer file associations and font access arrive with the milestones that need them |
 
 Other choices: TypeScript in strict mode, Vite, Vitest, plain Canvas 2D drawn in a worker (`OffscreenCanvas`) with the finished bitmap moved by CSS transforms during gestures. WebGL can come later if measurement says it is needed.
+
+### Project files (M2)
+
+The desktop shell reads files in the Electron main process and parses or serialises them with `core` in the renderer, over a context-isolated preload bridge. The Open dialog accepts `.nolli` and legacy `.mapcraft` with the same loader. Save always writes `.nolli`: an opened `.nolli` is overwritten in place, while an opened `.mapcraft` gets a `.nolli` sibling so the legacy file is never modified. A project path can also arrive on the command line or through a macOS `open-file` event. Packaging, signing and file associations in installers wait for M10.
 
 ### Text
 
@@ -70,25 +75,27 @@ Tiles are a tracing aid and are never exported. `packages/core/src/tiles/TileSou
 
 ### Files
 
-- Chrome, Edge and the desktop app open and save in place.
-- Safari and Firefox fall back to upload and download.
+- Chrome, Edge and the desktop app open and save in place. Open also accepts legacy `.mapcraft` documents; their JSON goes through the same loader, and the next save uses `.nolli`.
+- Safari and Firefox fall back to upload and download, with `.mapcraft` accepted on upload and `.nolli` produced on download.
 - Autosave, recent files and local version history live in the browser's storage (IndexedDB).
 
 ## Interface
 
-The spec is `design/redesign/REDESIGN-BRIEF.md` with its three screens. Read `design/redesign/README.md` first for what the screens do not show. In short:
+The spec is `design/redesign/REDESIGN-BRIEF.md` with its five screens. Read `design/redesign/README.md` first for what the screens do not show. In short:
 
-- Four phases as tabs, free to jump between: **Area · Style · Signs · Export**.
-- A flat layer list with a **Map** row first; Roads once, with type chips and `Line | Labels` tabs.
+- Two chrome tiers: a 40 px titlebar for the Nolli menu, project tabs and app-level actions, and a 52 px toolbar for map work. The project name appears only in its tab.
+- Desktop wrappers use their OS's window controls and drag regions; a plain browser keeps the titlebar but omits those controls.
+- Four phases as tabs, free to jump between: **Area · Style · Signs · Export**. The pictures still show the earlier Design / Signs tabs, so the text wins.
+- A flat layer list with a **Map** row first; Roads once, with type chips and `Line | Labels` tabs in the inspector.
 - Collapsible inspector sections; a visible dot on overridden fields and a "N values differ" bar with Reset all.
 - An amber banner when names do not fit. Beyond the brief: click a road to see why its name was dropped.
 - Export as a view that owns the artboard tool, not a sheet.
 
 Differences from the brief:
-- Inter and Lucide in place of SF Pro and SF Symbols.
 - Edit mode shows **Reset edits** in place of Save / Revert All.
+- Existing rebuild decisions settle its open stack/storage questions: Electron, custom Canvas 2D, and local files without accounts or cloud sync.
 
-The brief left five questions open. These defaults stand until changed: phase tabs in the toolbar centre; signs are placed with `+` then a click; dark mode uses its own tokens (the current ones in `web/apps/editor/src/tokens.css` are provisional); Map settings are a row in the layer list; the phase bar stays.
+These defaults also stand until changed: phase tabs in the toolbar centre; signs are placed with `+` then a click; dark mode uses its own tokens (the current ones in `web/apps/editor/src/tokens.css` are proposed, not approved); Map settings are a row in the layer list; the phase bar stays.
 
 ## Module map: Swift to TypeScript
 
@@ -98,14 +105,14 @@ Paths are in `macos/Nolli/`. Line counts are from the current source and show wh
 |---|---|---|---|
 | `Models/MapLayer`, `Styles`, `OSMFeature`, `SignOutput`, `BoundingBox` | ~1,050 | `core/model` | Types plus a runtime validator (zod). Defaults live here |
 | `Services/ProjectManager` | 227 | `core/project` | Load with default-filling (`upgraded`) and the version 7 migration; save |
-| `Models/MapCamera`, `Views/MapProjection` | ~300 | `core/camera`, `core/projection` | Pure Web Mercator maths. Easy and a good first port |
+| `Models/MapCamera`, `Views/MapProjection` | ~300 | `core/camera`, `core/projection` | **Done.** Pure Web Mercator maths, anchor-preserving zoom and rotation, fit |
 | `Models/PolygonCenter` | 95 | `geo/polygonCenter` | Pure functions; watch the `[lat, lon]` return order |
 | `Services/OSMFetcher` | 205 | `data/overpass` | Includes multipolygon assembly. The default server answers browser requests (tested: HTTP 200 with `access-control-allow-origin: *`; the other public server was busy but sent the same header) |
 | `Services/GeocoderService` | 45 | `data/geocode` | Nominatim; browser requests allowed (tested). Its usage policy still applies |
-| `Services/TileStore` | 156 | `render/tiles` | Fetch plus cache (memory and IndexedDB). Fall back to the parent tile while loading |
+| `Services/TileStore` | 156 | `core/tiles`, `apps/editor/map/tileStore.ts` | **Done.** Coverage and parent fallback in core; fetch, IndexedDB and an LRU of `ImageBitmap`s in the editor |
 | **`Views/LabelRendering`** | **878** | **`layout/labels`** | **The hardest part.** Text on a path with bend, repeat and overlap rules, stitching of ways, pins |
-| `Views/SceneRenderer` | 701 | `render/scene` | Compile the document into drawable chunks, then draw |
-| `Views/MapSurfaceView` | 1,111 | `canvas/MapCanvas` | Gestures, edit handles, overlay. Move the finished bitmap with CSS transforms during gestures |
+| `Views/SceneRenderer` | 701 | `core/render/scene`, `apps/editor/map/drawScene.ts` | **Done for geometry.** Compiles layers into artwork-space cells and draws them through one CTM; labels are M4 |
+| `Views/MapSurfaceView` | 1,111 | `apps/editor/map/MapCanvas.tsx` | **Camera and gestures done.** Worker rendering, CSS-transformed bitmap during gestures, HUD and controls; editing arrives later |
 | `Services/SVGExporter` (includes the Illustrator script) | 823 | `export/svg`, `export/jsx` | Mostly string building; straightforward once layout exists |
 | `Services/PDFExporter`, `SignExporter` | 214 | `export/pdf`, `export/sign` | PDF needs fonts embedded; see risks |
 | `Models/AppState`, `Services/DocumentActions` | ~630 | `core/store`, `core/actions` | One edit path that redraws, marks dirty and records undo |
@@ -153,9 +160,9 @@ Each one ends with something that can be opened and checked.
 | # | Milestone | Done when |
 |---|---|---|
 | M0 | Scaffolding, CI, text spike | **Done.** Lint, tests and build pass; Latin, Arabic and mixed names are shaped from font bytes and set on a curve |
-| M1 | Model and loader | Real `.nolli` files load and round-trip |
-| M2 | Desktop shell (thin) | Electron opens and saves a `.nolli` file |
-| M3 | Camera, vector rendering, tiles, gestures | A project draws at any zoom and rotation over tiles with no drift |
+| M1 | Model and loader | **Done.** A real version 6 `.mapcraft` project loads, saves as version 7 `.nolli`, and the native Swift decoder accepts the result |
+| M2 | Desktop shell (thin) | **Done.** Electron opened a real `.mapcraft` and a saved `.nolli`, and rewrote the `.nolli` in place; the renderer reported 7 layers and 3,275 features |
+| M3 | Camera, vector rendering, tiles, gestures | **Done.** The real 3,275-feature project drew over OpenStreetMap tiles at zoom 17. Wheel zoom, drag pan, Option-drag rotation, fit and reset-north were exercised in Electron, and tiles stayed aligned with vectors through rotation. Labels wait for M4 |
 | M4 | Label engine | Placement matches the macOS fixtures within tolerance |
 | M5 | Style phase | Layers, inspectors, chips, overrides, colour panel, undo |
 | M6 | Area phase and data | Search, draw area, Overpass fetch, refresh that keeps manual edits |
@@ -165,4 +172,8 @@ Each one ends with something that can be opened and checked.
 | M10 | Installers, dark mode, accessibility | Signed builds from CI; text contrast meets WCAG AA |
 | M11+ | Roadmap features | See [ROADMAP.md](ROADMAP.md) |
 
-M1 needs test copies of real `.nolli` files; none are in the repository.
+M1 was checked against a real version 6 `.mapcraft` project with seven layers, road sublayers, 2,653,094 bytes of source data: it loaded, saved as version 7 `.nolli`, reloaded, and the native Swift `JSONDecoder` accepted the saved file. That project is user data and is not committed; `.mapcraft` and `.nolli` are both gitignored. Existing projects predate the new extension, so `.nolli` output is first produced through the M2 UI rather than expected as an input fixture.
+
+M3 was checked in the built Electron app against the same seven-layer, 3,275-feature project. It opened at zoom 17 and the bounding-box centre, compiled the scene in 5–10 ms and drew it over OpenStreetMap tiles. Wheel zoom, drag pan, Option-drag rotation, Fit and Reset north all moved the camera as expected, and tiles stayed registered with the vectors through a −14° rotation. Reopening the saved `.nolli`, moving the camera and saving again wrote the live zoom, rotation and centre back into the file (17.45, 23°, bounding-box centre). OpenStreetMap rejects a `file://` Referer with a 403 "Access blocked" tile, so the desktop main process strips that header and sends `Nolli/0.1 (wayfinding map editor)` as the User-Agent. The tile cache is an in-memory LRU backed by IndexedDB, with parent-tile fallback while a tile loads; cache writes are best-effort. Labels, editing, style panels and the mouse-coordinate readout are not part of M3.
+
+The committed current-version fixture was generated with the native Swift models and `JSONEncoder`, and the sparse v6 fixture was derived from it to exercise the upgrader. They contain fabricated locations and ids, not user project data.

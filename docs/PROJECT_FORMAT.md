@@ -1,6 +1,6 @@
 # The `.nolli` file format
 
-A `.nolli` file is plain JSON written by Swift's `JSONEncoder`. The macOS app writes it and the web app must read it, so this is a contract. The authoritative definitions are the `Codable` types in `macos/Nolli/Models/` and `macos/Nolli/Services/ProjectManager.swift` (`ProjectSnapshot`, `LayerSnapshot`).
+A `.nolli` file is plain JSON written by Swift's `JSONEncoder`. Existing `.mapcraft` projects are the legacy filename for the same document family: the loader parses their contents and does not branch on the extension. Saving migrated projects produces `.nolli`. The macOS app writes this format and the web app must read it, so this is a contract. The authoritative definitions are the `Codable` types in `macos/Nolli/Models/` and `macos/Nolli/Services/ProjectManager.swift` (`ProjectSnapshot`, `LayerSnapshot`).
 
 ## Things that will trip up a port
 
@@ -307,6 +307,16 @@ Generated from four real project files (versions 5 and 6), so it shows what exis
 - `coordinate`: array
 - `tags`: object
 - `id`: number
+
+## Current web loader
+
+`web/packages/core/src/project/project.ts` exposes `loadProject(json)` and `serializeProject(project)`. Loading follows `ProjectManager.upgraded`: missing keys are filled only at the same shallow paths, optional nulls are accepted, and pre-v7 margins migrate as described above. Saving creates a version 7 snapshot. Keys the web app does not know are kept at every level and written back, so passing a file through it loses nothing a newer macOS build wrote (the macOS decoder itself ignores unknown keys). Manual-edit dictionaries are exposed as `Map`s and override sets as `Set`s in TypeScript, then encoded back to the Swift wire forms.
+
+The current runtime rejects Int64 values outside JavaScript's exact integer range (`Number.MIN_SAFE_INTEGER` … `Number.MAX_SAFE_INTEGER`) rather than silently rounding them. OSM ids in real projects are expected to fit, but full-Int64 lossless parsing remains a compatibility edge case.
+
+A real version 6 `.mapcraft` project has been loaded and saved as version 7 by this implementation, and the native Swift `JSONDecoder` accepted the result. That check used the user's own file and is not a committed fixture.
+
+The desktop shell reads either extension and always writes `.nolli`. Opening a `.mapcraft` file and saving leaves the original untouched and creates a `.nolli` sibling.
 
 ## Checking a port
 

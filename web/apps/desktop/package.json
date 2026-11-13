@@ -1,0 +1,14 @@
+{
+  "name": "@nolli/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^45.3.2"
+  }
+}

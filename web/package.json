@@ -8,10 +8,12 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @nolli/editor",
-    "typecheck": "tsc -p packages/core && tsc -p packages/core/tsconfig.test.json && tsc -p apps/editor",
+    "desktop": "npm run build && npm run start -w @nolli/desktop",
+    "desktop:dev": "npm run build -w @nolli/desktop && npm run start -w @nolli/desktop -- --dev",
+    "typecheck": "tsc -p packages/core && tsc -p packages/core/tsconfig.test.json && tsc -p apps/editor && tsc -p apps/desktop",
     "lint": "eslint .",
     "test": "vitest run",
-    "build": "npm run typecheck && npm run build -w @nolli/editor"
+    "build": "npm run typecheck && npm run build -w @nolli/editor && npm run build -w @nolli/desktop"
   },
   "engines": {
     "node": ">=22"

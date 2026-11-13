@@ -13,7 +13,7 @@ A wayfinding-map design tool. Read `README.md` first, then `docs/WEB_REBUILD.md`
 - **Say what was actually run.** Compiling is not verification for a UI or rendering app. Run it, look at it, and report what was and was not checked. The README lists what has never been checked; keep it honest as that changes.
 - **The `.nolli` format is a contract.** The web app must open files saved by the macOS app (`docs/PROJECT_FORMAT.md`). Never rename or remove a field without a migration. New fields need a default, because the loader fills missing keys (`ProjectManager.upgraded` in Swift).
 - **Mac project file is hand-maintained.** A new `.swift` file must also be added to `macos/Nolli.xcodeproj/project.pbxproj` (four places: build file, file reference, group, sources phase).
-- **Use test copies of user projects.** Never edit or commit `.nolli` files from a user's folder; they are gitignored on purpose.
+- **Use test copies of user projects.** Never edit or commit `.nolli` or legacy `.mapcraft` files from a user's folder; both are gitignored on purpose. Parse them by content—the legacy extension needs no separate core converter.
 - **`web/packages/core` has no DOM and no Node APIs.** It must run in a worker, in tests and from a command line. Drawing to a canvas belongs in `web/apps/editor`.
 - **Text is never drawn with the browser's text engine on the map.** Shape it with `core/text` and fill glyph outlines, so screen, SVG and PDF agree.
 - **The web UI follows `docs/design/redesign/`.** Read its `README.md` for where the web app departs from the brief.

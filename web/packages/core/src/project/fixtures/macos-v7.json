@@ -1,0 +1,496 @@
+{
+    "cameraLat": 54.665,
+    "signArtworkScale": 1.1,
+    "version": 7,
+    "showNorthArrow": true,
+    "signOutputs": [
+        {
+            "lon": -2.7505,
+            "backRotation": 220,
+            "id": "00000000-0000-4000-8000-000000000006",
+            "centerOffsetLon": -0.0002,
+            "widthMM": 600,
+            "rotation": 40,
+            "name": "North entrance",
+            "isDoubleSided": true,
+            "centerOffsetLat": 0.0001,
+            "lat": 54.6645,
+            "iconScale": 0.75,
+            "heightMM": 450,
+            "labelScale": 1.25,
+            "dpi": 600
+        }
+    ],
+    "layers": [
+        {
+            "labelAlongOffsets": [
+                65410291,
+                6.125
+            ],
+            "roadSubLayers": [
+                {
+                    "customStyle": {
+                        "lineJoin": "round",
+                        "width": 3,
+                        "casingColor": {
+                            "a": 1,
+                            "g": 1,
+                            "b": 1,
+                            "r": 1
+                        },
+                        "casingWidth": 4,
+                        "opacity": 1,
+                        "lineCap": "round",
+                        "color": {
+                            "r": 0.2,
+                            "a": 1,
+                            "g": 0.2,
+                            "b": 0.2
+                        },
+                        "casingEnabled": false,
+                        "dashEnabled": false
+                    },
+                    "labelOverrides": [
+                        "tracking",
+                        "fontSize"
+                    ],
+                    "useCustomStyle": true,
+                    "id": "00000000-0000-4000-8000-000000000002",
+                    "lineOverrides": [
+                        "width"
+                    ],
+                    "defaultWidth": 3,
+                    "roadTypes": [
+                        "primary",
+                        "primary_link"
+                    ],
+                    "name": "Primary",
+                    "isVisible": true,
+                    "labelStyle": {
+                        "shadowEnabled": true,
+                        "shadowColor": {
+                            "a": 1,
+                            "g": 0,
+                            "b": 0,
+                            "r": 0
+                        },
+                        "shadowOffsetX": 1,
+                        "calloutWidth": 0.5,
+                        "repeatInterval": 110,
+                        "bufferOpacity": 1,
+                        "linePosition": "below",
+                        "maxCharAngle": 25,
+                        "tagKey": "name",
+                        "shadowOffsetY": 1,
+                        "calloutsEnabled": true,
+                        "distanceFromLine": 2,
+                        "lineLabelMode": "horizontal",
+                        "calloutStyle": "manhattan",
+                        "fontName": "Helvetica Neue",
+                        "minSpacing": 80,
+                        "haloWidth": 1.5,
+                        "color": {
+                            "a": 1,
+                            "g": 0.2,
+                            "b": 0.2,
+                            "r": 0.2
+                        },
+                        "placement": "bottom_right",
+                        "uppercase": true,
+                        "calloutColor": {
+                            "a": 1,
+                            "g": 0.533,
+                            "b": 0.533,
+                            "r": 0.533
+                        },
+                        "tracking": 21,
+                        "isVisible": true,
+                        "wordSpacing": 0,
+                        "shadowOpacity": 0.3,
+                        "offsetX": 0,
+                        "overlapMode": "allow_if_required",
+                        "bufferEnabled": true,
+                        "offsetY": 0,
+                        "bufferJoinStyle": "round",
+                        "typeCase": "title_case",
+                        "showAllLabels": true,
+                        "fontSize": 9,
+                        "haloColor": {
+                            "a": 1,
+                            "g": 1,
+                            "b": 1,
+                            "r": 1
+                        },
+                        "calloutMinDistance": 4,
+                        "shadowBlur": 2,
+                        "fontWeight": "Regular",
+                        "fallbackTagKey": "name:en",
+                        "priority": 5,
+                        "textStyleId": "00000000-0000-4000-8000-000000000007",
+                        "opacity": 1,
+                        "enabled": true
+                    },
+                    "useCustomLabelStyle": true
+                }
+            ],
+            "labelStyle": {
+                "tagKey": "name",
+                "fontWeight": "Regular",
+                "maxCharAngle": 25,
+                "offsetX": 0,
+                "tracking": 21,
+                "lineLabelMode": "horizontal",
+                "overlapMode": "allow_if_required",
+                "priority": 5,
+                "color": {
+                    "b": 0.2,
+                    "r": 0.2,
+                    "g": 0.2,
+                    "a": 1
+                },
+                "opacity": 1,
+                "placement": "bottom_right",
+                "offsetY": 0,
+                "textStyleId": "00000000-0000-4000-8000-000000000007",
+                "calloutMinDistance": 4,
+                "enabled": true,
+                "fallbackTagKey": "name:en",
+                "bufferJoinStyle": "round",
+                "typeCase": "title_case",
+                "shadowColor": {
+                    "b": 0,
+                    "r": 0,
+                    "g": 0,
+                    "a": 1
+                },
+                "shadowBlur": 2,
+                "shadowOffsetY": 1,
+                "calloutStyle": "manhattan",
+                "repeatInterval": 110,
+                "fontSize": 9,
+                "shadowOpacity": 0.3,
+                "distanceFromLine": 2,
+                "calloutColor": {
+                    "b": 0.533,
+                    "r": 0.533,
+                    "g": 0.533,
+                    "a": 1
+                },
+                "minSpacing": 80,
+                "showAllLabels": true,
+                "wordSpacing": 0,
+                "shadowEnabled": true,
+                "calloutsEnabled": true,
+                "isVisible": true,
+                "fontName": "Helvetica Neue",
+                "haloWidth": 1.5,
+                "bufferEnabled": true,
+                "haloColor": {
+                    "b": 1,
+                    "r": 1,
+                    "g": 1,
+                    "a": 1
+                },
+                "linePosition": "below",
+                "bufferOpacity": 1,
+                "shadowOffsetX": 1,
+                "uppercase": true,
+                "calloutWidth": 0.5
+            },
+            "symbolStyle": {
+                "isVisible": true,
+                "lockAspect": true,
+                "iconTextGap": 4,
+                "iconId": "00000000-0000-4000-8000-000000000004",
+                "rotation": 0,
+                "collisionMargin": 8,
+                "enabled": true,
+                "opacity": 1,
+                "labelLayout": "icon_above",
+                "anchorPoint": "visual_center",
+                "inlineSVGData": "PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnLz4=",
+                "height": 24,
+                "bindToLabels": false,
+                "blendMode": "normal",
+                "width": 24,
+                "allowOverlapWithOtherLayers": false,
+                "textAlignment": "align_bottom"
+            },
+            "isVisible": true,
+            "originalPolygonGeometry": [
+                -87231,
+                [
+                    [
+                        [
+                            -2.7521,
+                            54.663
+                        ],
+                        [
+                            -2.7511,
+                            54.663
+                        ],
+                        [
+                            -2.7521,
+                            54.663
+                        ]
+                    ]
+                ]
+            ],
+            "kind": "roads",
+            "lineFeatures": [
+                {
+                    "coordinates": [
+                        [
+                            -2.751,
+                            54.664
+                        ],
+                        [
+                            -2.75,
+                            54.665
+                        ]
+                    ],
+                    "id": 65410291,
+                    "tags": {
+                        "name": "Little Dockray",
+                        "highway": "primary"
+                    }
+                }
+            ],
+            "roadStyle": {
+                "lineCap": "round",
+                "lineJoin": "round",
+                "dashEnabled": true,
+                "casingWidth": 4,
+                "casingEnabled": true,
+                "width": 5.5,
+                "color": {
+                    "b": 0.2,
+                    "a": 1,
+                    "r": 0.2,
+                    "g": 0.2
+                },
+                "opacity": 1,
+                "casingColor": {
+                    "a": 1,
+                    "b": 1,
+                    "r": 1,
+                    "g": 1
+                }
+            },
+            "areaStyle": {
+                "strokeColor": {
+                    "b": 0.647,
+                    "r": 0.647,
+                    "g": 0.839,
+                    "a": 1
+                },
+                "strokeEnabled": true,
+                "strokeWidth": 0.75,
+                "fillOpacity": 0.8,
+                "fillColor": {
+                    "b": 0.784,
+                    "r": 0.784,
+                    "g": 0.902,
+                    "a": 1
+                }
+            },
+            "labelPins": [
+                -65410292,
+                [
+                    0,
+                    15.5
+                ],
+                65410291,
+                []
+            ],
+            "pointFeatures": [
+                {
+                    "id": 42,
+                    "coordinate": [
+                        -2.7505,
+                        54.6645
+                    ],
+                    "tags": {
+                        "name": "Angel Square",
+                        "tourism": "attraction"
+                    }
+                }
+            ],
+            "poiStyle": {
+                "shape": "diamond",
+                "strokeColor": {
+                    "a": 1,
+                    "g": 1,
+                    "b": 1,
+                    "r": 1
+                },
+                "strokeWidth": 1.5,
+                "fillColor": {
+                    "a": 1,
+                    "g": 0.224,
+                    "b": 0.208,
+                    "r": 0.898
+                },
+                "size": 8
+            },
+            "name": "Roads",
+            "polygonFeatures": [
+                {
+                    "rings": [
+                        [
+                            [
+                                -2.752,
+                                54.663
+                            ],
+                            [
+                                -2.751,
+                                54.663
+                            ],
+                            [
+                                -2.751,
+                                54.664
+                            ],
+                            [
+                                -2.752,
+                                54.663
+                            ]
+                        ]
+                    ],
+                    "id": -87231,
+                    "tags": {
+                        "building": "yes"
+                    }
+                }
+            ],
+            "labelOffsets": [
+                -65410292,
+                [
+                    0,
+                    4
+                ],
+                65410291,
+                [
+                    1.5,
+                    -2
+                ]
+            ],
+            "symbolOffsets": [
+                42,
+                [
+                    -3,
+                    2
+                ]
+            ],
+            "originalPointGeometry": [
+                42,
+                [
+                    -2.7506,
+                    54.6646
+                ]
+            ],
+            "originalLineGeometry": [
+                65410291,
+                [
+                    [
+                        -2.7511,
+                        54.664
+                    ],
+                    [
+                        -2.7501,
+                        54.665
+                    ]
+                ]
+            ],
+            "id": "00000000-0000-4000-8000-000000000001"
+        }
+    ],
+    "artboardBackgroundEnabled": true,
+    "cameraLon": -2.75,
+    "artboardRotation": 12.5,
+    "colorSwatches": [
+        {
+            "a": 0.8,
+            "g": 0.5,
+            "b": 0.75,
+            "r": 0.25
+        }
+    ],
+    "cameraZoom": 16.5,
+    "boundingBox": {
+        "minLat": 54.66,
+        "minLon": -2.76,
+        "maxLat": 54.67,
+        "maxLon": -2.74
+    },
+    "iconLibrary": [
+        {
+            "height": 24,
+            "name": "Entrance",
+            "blendMode": "normal",
+            "lockAspect": true,
+            "opacity": 1,
+            "svgData": "PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxwYXRoIGQ9J00wIDBoMjR2MjR6Jy8+PC9zdmc+",
+            "width": 24,
+            "id": "00000000-0000-4000-8000-000000000004"
+        }
+    ],
+    "settings": {
+        "defaultWidthMM": 400,
+        "defaultHeightMM": 400,
+        "overpassEndpoint": "https://overpass.openstreetmap.fr/api/interpreter",
+        "defaultExportFormat": "SVG",
+        "cacheDurationDays": 7,
+        "defaultFont": "Helvetica Neue",
+        "showTileBackground": true,
+        "tileOpacity": 1,
+        "defaultDPI": 300
+    },
+    "baseZoom": 17,
+    "colorSchemes": [
+        {
+            "id": "00000000-0000-4000-8000-000000000005",
+            "colors": {
+                "roads|Roads|color": {
+                    "b": 0.3,
+                    "a": 1,
+                    "r": 0.1,
+                    "g": 0.2
+                }
+            },
+            "name": "Muted"
+        }
+    ],
+    "artboardBackground": {
+        "a": 1,
+        "g": 0.961,
+        "b": 0.941,
+        "r": 0.973
+    },
+    "textStyles": [
+        {
+            "name": "Road labels",
+            "fontWeight": "Regular",
+            "color": {
+                "r": 0.2,
+                "a": 1,
+                "g": 0.2,
+                "b": 0.2
+            },
+            "opacity": 1,
+            "haloWidth": 1.5,
+            "typeCase": "as_stored",
+            "fontSize": 9,
+            "tracking": 20,
+            "haloColor": {
+                "a": 1,
+                "g": 1,
+                "b": 1,
+                "r": 1
+            },
+            "fontName": "Helvetica Neue",
+            "wordSpacing": 0,
+            "id": "00000000-0000-4000-8000-000000000003"
+        }
+    ],
+    "northArrowPosition": "bottom_left"
+}

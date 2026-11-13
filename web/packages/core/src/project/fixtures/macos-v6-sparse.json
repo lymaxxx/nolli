@@ -1,0 +1,77 @@
+{
+  "version": 6,
+  "settings": {
+    "defaultFont": "Fira Sans"
+  },
+  "layers": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "Roads",
+      "kind": "roads",
+      "isVisible": true,
+      "roadStyle": {
+        "color": {
+          "b": 0.2,
+          "a": 1,
+          "r": 0.2,
+          "g": 0.2
+        },
+        "width": 4
+      },
+      "areaStyle": {},
+      "poiStyle": {},
+      "labelStyle": {
+        "fontName": "Fira Sans",
+        "minSpacing": 80
+      },
+      "symbolStyle": {},
+      "lineFeatures": [
+        {
+          "coordinates": [
+            [
+              -2.751,
+              54.664
+            ],
+            [
+              -2.75,
+              54.665
+            ]
+          ],
+          "id": 65410291,
+          "tags": {
+            "name": "Little Dockray",
+            "highway": "primary"
+          }
+        }
+      ],
+      "roadSubLayers": [
+        {
+          "labelStyle": {
+            "minSpacing": 80
+          }
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000008",
+          "name": "Primary",
+          "roadTypes": [
+            "primary"
+          ],
+          "customStyle": {
+            "width": 4
+          },
+          "labelStyle": {
+            "minSpacing": 30
+          }
+        }
+      ],
+      "labelOffsets": null,
+      "labelAlongOffsets": []
+    }
+  ],
+  "signOutputs": [
+    {
+      "lat": 54.6645,
+      "lon": -2.7505
+    }
+  ]
+}

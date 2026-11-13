@@ -1,125 +1,158 @@
-# Nolli UI/UX redesign: implementation brief
+# Nolli: UI/UX redesign and implementation brief
 
-For Claude Code, working in the Nolli macOS app (SwiftUI). Read this file first, then `reference/INTERFACE-original.md` (what the app does today) and the PNGs in `screens/`.
+For Claude Code. Read this file first, then `../INTERFACE.md` and `../tokens.json` (the previous app, then called MapCraft) and the JPEGs in `screens/` (converted from the handoff's PNGs).
 
-I (the designer's assistant) have **not seen the Swift source**. Nothing here names real files or types. Start by exploring the repo and mapping each item below to the code that owns it. Ask before large refactors.
+**Context change:** the product is now called **Nolli** and is a **web app** with desktop wrappers for macOS, Windows and Linux. It was a native SwiftUI Mac app (MapCraft). The old interface description and measured tokens in `reference/` are about that app; the behaviour carries over, the platform assumptions do not.
 
-## What is in this package
+I (the designer's assistant) have **not seen any source code**, old or new. Nothing here names real files. Explore the repo first, and ask before large refactors or stack choices.
+
+## Package contents
 
 | Path | What it is |
 |---|---|
-| `REDESIGN-BRIEF.md` | This file: goals, flow, per-screen spec, plan, acceptance criteria |
-| `screens/01-style-roads-labels.png` | Style phase, Roads selected, Labels tab, Primary type chip active |
-| `screens/02-signs-mode.png` | Signs phase: list, live preview, placement and size |
-| `screens/03-export-sheet.png` | Export sheet (to become an Export view, see Phase 4) |
-| `nolli-redesign.pen` | Source design file (pen.dev). Frames: "Editor – Roads labels", "Editor – Signs mode", "Editor – Export sheet" |
-| `DesignTokens.swift` | Colour, size and type tokens as Swift constants |
-| `reference/` | Original interface description and measured tokens of the current app |
+| `REDESIGN-BRIEF.md` | This file |
+| `screens/01-macos-style-roads-labels.jpg` | Style phase, Roads → Labels, macOS wrapper |
+| `screens/02-macos-signs.jpg` | Signs, macOS wrapper |
+| `screens/03-macos-export-sheet.jpg` | Export sheet over the editor |
+| `screens/04-windows-style.jpg` | Same Style screen, Windows wrapper |
+| `screens/05-linux-style.jpg` | Same Style screen, Linux wrapper |
+| `nolli-redesign.pen` | Source design (pen.dev). Frames are named "Nolli – <OS> · <screen>" |
+| `../../../web/apps/editor/src/tokens.css` | Design tokens as CSS custom properties, kept with the web app that uses them (light designed; dark is a proposal) |
+| `../INTERFACE.md`, `../tokens.json` | Original description and tokens of the old native app (the handoff's `reference/` duplicates, omitted here) |
 
 ### Designed vs only described
+- **Designed:** the visual language, the two-tier chrome (titlebar + toolbar) for three OSes, layers panel, Roads inspector with type chips, Signs inspector, Export sheet.
+- **Only described here:** the four-phase flow, Area phase, Export view, Edit-mode bar, Map row, ⌘K palette, dark mode, narrow-window behaviour, the browser (non-wrapped) variant. Follow the text and the same visual language; ask when ambiguous.
 
-- **Designed (3 screens above):** visual language, toolbar, layers panel, road-type chips, collapsible inspector sections, banner and override patterns, Signs inspector, Export sheet.
-- **Only described in this brief (not drawn):** the four-phase flow, the Area phase and its empty state, the Export *view*, the Edit-mode bar, the Map row, the ⌘K palette, dark mode. Use the text as the spec and keep to the same visual language. If something is ambiguous, ask rather than invent.
+## Product
 
-## Product in one paragraph
-
-Nolli turns OpenStreetMap data into wayfinding maps. A designer picks an area, fetches roads/water/buildings as layers, styles them like vector art (road names set on a path), optionally places signs that each get a print-ready map face, then exports SVG, PDF or an Illustrator script. Users are graphic designers who live in Illustrator and Figma. The canvas is the hero; the UI should feel like a calm, dense Figma-style editor.
+Nolli turns OpenStreetMap data into wayfinding maps (the kind printed on signs and boards). A designer picks an area, fetches roads, water, buildings and so on as layers, styles them like vector artwork (road names set on a path), optionally places signs that each get a print-ready map face, then exports SVG, PDF or an Illustrator script. Users are graphic and wayfinding designers who live in Illustrator and Figma. The canvas is the hero. The feel is Figma: calm, dense, three-column.
 
 ## Goals
-
-1. Make the UI follow the job: **Area → Style → Signs → Export**.
+1. Follow the job: **Area → Style → Signs → Export**.
 2. Remove duplication (two road trees, two Design/Signs switches).
-3. Make state visible (what is overridden, what is hidden and why, what is unsaved).
-4. Shorten the inspector with progressive disclosure.
-5. One restrained accent colour; red only for destructive.
+3. Make state visible (overrides, hidden labels and why, unsaved changes).
+4. Shorten inspectors with progressive disclosure.
+5. One restrained accent; red only for destructive.
+6. One UI that works in a browser and in three OS wrappers, where the wrapper chrome is part of the product, not an empty strip.
 
-## Hard constraints (unchanged from the original brief)
+## Platform: web app plus wrappers
 
-- Native macOS, SwiftUI, system font (SF Pro) and SF Symbols. Design file uses Inter and Lucide only as stand-ins.
-- Must look right in dark mode (not yet designed: see Open questions).
-- Left panel 256 pt, right panel 300 pt. Map is the largest element and is never covered by floating panels (small overlays like zoom control and hint pill are fine).
-- Every numeric field: typed input, ↑/↓ stepping, Shift for ×10, drag-to-scrub on its prefix. Values may exceed the slider range.
-- One control hides both side panels.
-- The map's own labels (road names) are output, not UI. Do not restyle their typography.
-- Keep existing behaviour of inheritance (road type inherits from master), colour panel, undo, and file format. This is a UI change, not a data-model change.
+The app is a single web codebase. The wrappers only host it and supply window chrome.
 
-## The new flow
+**Stack (recommendation, confirm with the designer):** TypeScript, React, Vite; Tailwind with shadcn/ui primitives (the design file was built on a shadcn-style kit, so tokens map cleanly). The map renderer is the largest decision. It must support: vector styling per layer, text set on a path with per-type inheritance, manual vertex and label-dot edits, and clean SVG/PDF export. Evaluate MapLibre GL, a custom Canvas/SVG renderer, or a hybrid before committing. Prototype road-name-on-path first, it is the riskiest part.
 
-Top bar centre or left (your call, see Open questions): phase tabs **Area · Style · Signs · Export**, shortcuts ⌘1–⌘4. Each phase swaps the toolbar contents and side panels. Phases are navigation, not a locked wizard: the user can jump anywhere once data exists.
+**Wrapper choice (open question):** Electron gives identical Chromium rendering on all three OSes, which matters for typography, fonts and canvas output. Tauri is far smaller but uses WebKit on macOS and WebKitGTK on Linux, whose text, canvas and font behaviour differ. For a type-heavy design tool I lean Electron; decide with the team.
 
-### 1. Area
-- New project opens here. Search field, then two actions: **Use Current View** and **Draw Area**.
-- Checklist of layers to fetch (Roads, Water, Buildings, Parks, Transport, Pedestrian) with approximate counts; all on by default.
-- **Fetch data** is the primary action, with a progress bar and cancel.
-- After a successful first fetch, offer a palette/preset (today's "Schemes") before landing in Style.
-- Afterwards this phase shows the area and a **Refresh data** action. The refresh icon in the old toolbar goes away.
+**Things that change versus the native app:**
+- **Fonts.** Designers expect to use their installed fonts. The Local Font Access API exists only in Chromium; Safari and Firefox users get a bundled font list plus upload. Electron has it. Plan for font upload and a clear fallback state in the font picker.
+- **Files.** The native app opened `.mapcraft` documents. Use `.nolli`. In the browser use the File System Access API where available (Chromium) and download/upload elsewhere; wrappers get real open/save dialogs. Autosave to IndexedDB (or the wrapper's disk) so "Saved/Edited" is honest.
+- **Menus and shortcuts.** The browser has no menu bar, so the **Nolli menu** and **File menu** in the UI carry what the macOS menu bar did. Shortcuts use ⌘ on macOS and Ctrl elsewhere; show the right glyph per OS. Avoid browser-reserved combinations (Ctrl+W, Ctrl+T, Ctrl+N in a tab).
+- **Gestures.** Pinch zoom arrives as ctrl+wheel in browsers; two-finger rotate has no standard web event (Safari only). Provide Option/Alt-drag rotate and a numeric rotation field as the baseline.
+- **Data and tiles.** OSM tile servers have a usage policy that forbids heavy app traffic: use a configurable tile source (today's "data server" setting) and an Overpass endpoint with CORS or a small proxy. Reference tiles are never exported.
+- **Dark mode** follows `prefers-color-scheme` with a manual override in Settings.
+- **Resizing.** The browser window can be narrow. Below ~1100 px width collapse the right panel to an overlay; below ~800 px show a "best on a larger screen" notice rather than a broken layout.
 
-### 2. Style
-- Left: layer list. First row **Map** (today's "Frame": background, tiles opacity, rotation, north arrow, base zoom, sign defaults), selected by default. This replaces "press Esc to see Frame".
-- Layer rows have icon, name, count. Icons and Labels child rows are removed; they become inspector tabs.
-- **Roads is one row.** Inspector shows chips `All roads · Primary · Secondary · Local · Paths · Cycling` and tabs `Line | Labels`. Selecting a chip keeps the tab, so the user can compare Line and Labels for the same type. Chips with overrides show a dot.
-- Inheritance: overridden fields get an accent label and a dot (make the dot at least 6 pt with a ≥ 20 pt hit area; click resets the field). A bar above the sections says "N values differ from All roads" with **Reset all**.
-- Inspector sections are collapsible, state remembered per section. Default open: Text, Along the road. Default closed: Overlap, Halo, Shadow, Callouts.
-- Label visibility problems ("130 of 196 names fit") appear as an amber banner at the top of the Labels tab **and** as a small warning on the layer row and map status. They also say what to do.
-- **Select / Edit** is a mode toggle. In Edit mode a bar on the map shows the hint plus **Revert All** (destructive style) and **Save** (primary). Those two buttons exist only in Edit mode.
+## Window chrome: two tiers, like Figma
 
-### 3. Signs
-- Left: sign list with name and one-line summary (facing, size, two-sided). `+` then click the map; first-use hint under the list. Ideal: clicking the map while Signs is active places a sign directly (decide with the user).
-- Right: large live preview at the top (drag to reframe, eye button to toggle on map), then Placement, Size, Artwork sections.
-- Marker on the map shows position and a needle for facing. Dragging the needle rotates.
-- **Export all signs** at the bottom of the list.
+The previous version had a bare strip with three buttons above the toolbar. The chrome is now two bands. The **titlebar** belongs to the app (identity, documents, account). The **toolbar** belongs to the work (what I do on this map).
 
-### 4. Export
-- Replaces the modal sheet. The **bounding box (artboard) tool lives here**, since it defines the export area, not the fetch area.
-- Right panel: format cards (SVG, PDF, Illustrator), artboard W/H in mm with **Fit to area**, DPI with resulting pixel size, live-type toggle for curved road names, primary **Export…** button. Signs batch export is a second option in the same panel.
-- Phase 4 can ship last. Until then, keep the sheet from `screens/03-export-sheet.png` and open it from the toolbar's Export button.
+### Tier 1: Titlebar (40 px, tinted `--nolli-chrome`)
 
-### Toolbar (all phases)
+Left to right:
+1. **OS window controls** (per wrapper, see below).
+2. **Nolli menu**: accent monogram tile + "Nolli" wordmark + chevron. Opens a menu: New project, Open, Recent, Preferences, Help, About, Check for updates, Sign out. This is the app identity and is visually unlike the project name. **Replace the monogram with the real logo when it exists.**
+3. **Project tabs**: one per open project. The active tab is white and merges into the toolbar below (top corners rounded 8, bottom flat). A tab = map icon, project name, green "saved" dot (or accent "edited" dot), close ×. Inactive tabs are plain text on the chrome. `+` opens a new project. The tab is the **only** place the project name appears; there is no second title in the toolbar. Double-click to rename. Tabs overflow into a scrollable strip with a dropdown listing all.
+4. **Drag region** (the empty middle). In the wrapper it must be a window-drag area; interactive children opt out.
+5. **Account cluster**: Help, **Settings**, Account (avatar). Settings moved here from the toolbar because it is app-level, not map-level.
 
-Left to right: window controls, panel toggle, location search, document title with save state (green dot + "Saved", or "Edited"). Right: phase-specific tools, document menu, **Export** (the single filled button), settings. The dedicated Design/Signs switch and the duplicate right-panel tabs are removed; the phase tabs replace them. Tools get text labels (Select, Edit, Area). Rare actions (settings, text styles, cache) are also reachable via a ⌘K command palette.
+**Per-OS differences. Everything else is identical.**
 
-## Visual spec (see screenshots and `DesignTokens.swift`)
+| | macOS | Windows | Linux |
+|---|---|---|---|
+| Controls | Traffic lights at far left, 14 px inset, before the Nolli menu | Minimise / maximise / close at far right, 46 × 40 px, flush to the edge | Round 24 px buttons at far right (minimise, maximise, close), GNOME-style |
+| Nolli menu | After the lights | First item, 10 px inset | First item, 10 px inset |
+| Right cluster inset | 12 px | 0 (controls touch the edge) | 12 px |
 
-- Panels white, 1 pt hairlines, no cards or boxes inside inspectors. Sections separated by hairline only.
-- Selected rows and cards: soft accent tint (`accentSoft`) with accent text/icon.
-- Controls 26 pt high, fields `field` grey, radius 6. Property label column 70 pt.
-- Segmented controls: grey track, white raised selected segment, accent icon on the selected one.
-- Type: 12 pt body, 13 pt row titles, 14 pt inspector title, 11 pt captions, 11 pt semibold tracked overlines.
-- Accent is used for: selected row, primary button, slider fill, switch, selected chip, override dot. Not for decoration.
-- Prefer SwiftUI system controls (Toggle, Picker, Slider, Stepper, DisclosureGroup, Table) and style them rather than drawing custom ones, unless the screenshot needs something the system control cannot do. Chips and the 3×3 anchor grid are custom.
+Implementation notes:
+- Electron: `titleBarStyle: 'hidden'` with `titleBarOverlay` on Windows (native min/max/close drawn over your bar; reserve the env area), `hiddenInset` traffic lights on macOS. On Linux there is no overlay: draw the three round buttons yourself and wire them to IPC.
+- Use CSS `-webkit-app-region: drag` on the bar and `no-drag` on tabs and buttons. Respect `env(titlebar-area-x/width)` where available so tabs never slide under native controls.
+- Windows 11's snap-layout flyout comes only with the native overlay buttons; prefer them over drawn ones there.
+- **In a plain browser** there is no OS chrome: render the same titlebar without window controls (the browser's own tab strip sits above it). Keep it, because the project tabs and Nolli menu are product UI.
+
+### Tier 2: Toolbar (52 px, white)
+
+Three zones whose edges line up with the columns below (256 | flexible | 300), 14 px side padding, hairline dividers, controls 28–30 px tall and vertically centred.
+
+| Zone | Contents | Role |
+|---|---|---|
+| Left (256) | Toggle panels, Undo, Redo | History and layout |
+| Map (flexible) | **Search + Fetch data** left; **Mode tabs** (Design / Signs; later the four phases) exactly centred; **Map tools** (Select, Edit, Area) right | What I'm working on |
+| Output (300) | File menu (Save, Duplicate, Revert…), **Export** right-aligned, the only filled button | What leaves the app |
+
+Control styles by function:
+- **Mode tabs**: navigation. Text and icon, full bar height, 2 px accent underline on the active one, no background.
+- **Map tools**: icon-only 30 px buttons, no shared track, soft accent tint on the active one. Tooltips show name and shortcut (V, E, A).
+- **Actions**: outlined or ghost; Export alone is filled.
+
+Moved out of the toolbar in this round: document title (now the tab), settings (now the titlebar), the macOS-style window controls (now the per-OS titlebar).
+
+## The new flow (four phases)
+
+Phase tabs **Area · Style · Signs · Export** replace the Design/Signs switch, with ⌘/Ctrl 1–4. Phases are navigation, not a locked wizard; free-jump once data exists.
+
+1. **Area.** New projects open here. Search, then **Use Current View** or **Draw Area**. Checklist of layers to fetch with approximate counts. **Fetch data** is the primary action, with progress and cancel. After the first fetch, offer a palette/preset (today's "Schemes"). Later this phase shows the area and **Refresh data**.
+2. **Style.** Left: layer list with a first row **Map** (background, tiles opacity, rotation, north arrow, base zoom, sign defaults), selected by default. **Roads is one row**; the inspector has chips `All roads · Primary · Secondary · Local · Paths · Cycling` and tabs `Line | Labels`; chips with overrides show a dot. Overridden fields get an accent label and a dot (≥ 6 px, ≥ 20 px hit area, click resets). A bar says "N values differ from All roads" with **Reset all**. Sections collapse and remember state; default open: Text, Along the road; closed: Overlap, Halo, Shadow, Callouts. "130 of 196 names fit" is an amber banner in the Labels tab plus a warning on the layer row. **Select / Edit** is a mode; Edit shows a bar on the map with hint, **Revert All** (destructive) and **Save** (primary), only while editing.
+3. **Signs.** Left: list with name and one-line summary; `+` then click the map (decide whether a direct click should place). Right: large live preview first (drag to reframe, eye toggles it on the map), then Placement, Size, Artwork. The marker shows a facing needle; dragging it rotates. **Export all signs** under the list.
+4. **Export.** A view, not a modal; the bounding-box (artboard) tool lives here. Right panel: format cards (SVG, PDF, Illustrator), artboard W/H in mm with **Fit to area**, DPI with resulting pixels, live-type toggle for curved road names, **Export…**. Signs batch export is a second option. Until built, keep the sheet from `screens/03-macos-export-sheet.jpg`.
+
+## Visual spec
+
+See `screens/` and `tokens.css`.
+- White panels, 1 px hairlines, no cards in inspectors; sections separated by hairlines.
+- Selected rows/cards: `--nolli-accent-soft` with accent text and icon.
+- Controls 26 px, fields `--nolli-field`, radius 6; property label column 70 px.
+- Segmented controls: grey track, raised white selected segment.
+- Type: Inter (bundled) with system fallback; 12 body, 13 row titles, 14 inspector titles, 11 captions, 11 semibold tracked overlines.
+- Accent only for: selected, primary, slider fill, switch, selected chip, override dot, active mode-tab underline. Red only for destructive.
+- Build on accessible primitives (Radix via shadcn): Tabs, Switch, Slider, Select, Popover, Dialog, Collapsible, Tooltip, DropdownMenu. Chips and the 3 × 3 anchor grid are custom.
+- Numeric fields everywhere: typed input, ↑/↓ stepping, Shift = ×10, drag-to-scrub on the prefix, values may exceed the slider range.
+- The map's own labels (road names) are output, not UI; do not restyle their typography.
+- Side panels stay 256 / 300 px; the map is the largest element and is not covered by floating panels (zoom control and hint pill are fine). One control hides both panels.
 
 ## Implementation plan
 
-Do these as separate, reviewable steps. After each, build, run, and compare with the screenshots.
-
-1. **Tokens and theme.** Add `DesignTokens.swift`. Replace hard-coded colours and system-accent use for interactive states. Add dark variants.
-2. **Layers panel.** Flatten the tree, remove Icons/Labels child rows, add the Map row, add the warning indicator. Keep drag-to-reorder and hide/show.
-3. **Inspector shell.** Header, road-type chips, tabs, collapsible sections with remembered state, override bar and larger reset dot. Do Roads first, then area and point layers.
-4. **Toolbar.** New layout, labelled tools, Edit-mode bar (Revert All / Save), remove the duplicate Design/Signs control.
-5. **Phase navigation.** Introduce the phase tabs and Area phase (including the empty state and fetch checklist). Style and Signs keep their panels from steps 2–3.
-6. **Signs inspector.** Large preview, grouped sections, list summaries.
-7. **Export view.** Move export into its own phase; keep artboard tool here.
-8. **Polish.** ⌘K palette, ⌘1–⌘4, empty/loading/error states, keyboard navigation, accessibility labels, VoiceOver for chips and override dots.
+Separate, reviewable steps. After each: run, compare with the screenshots.
+1. **Foundations.** Project setup, `tokens.css`, theme (light/dark), font bundling, shortcut layer with OS-aware glyphs.
+2. **App shell.** Titlebar (tabs, Nolli menu, account cluster), toolbar zones, panel layout, resize behaviour. Browser first, then the Electron/Tauri wrapper with per-OS chrome.
+3. **Layers panel** (flat list, Map row, warning indicator, drag reorder, hide/show).
+4. **Inspector shell** (header, road chips, tabs, collapsible sections, override bar and dots), Roads first.
+5. **Map renderer spike**, in parallel from step 2: road names on path, per-type inheritance, SVG export. Decide the renderer here.
+6. **Area phase** (empty state, fetch checklist, progress).
+7. **Signs** (list, preview, marker).
+8. **Export view.**
+9. **Polish.** ⌘K palette, empty/loading/error states, keyboard navigation, ARIA, screen-reader labels for chips and override dots, update checks, autosave and file handling per platform.
 
 ## Acceptance criteria
+- A new user can go from an empty project to an exported PDF without opening a menu or guessing an icon.
+- Roads appear once in the layer list; default-open inspector sections fit without scrolling at 1360 × 811.
+- Overrides are visible without hovering; one click resets a field, one click resets all.
+- The project name appears once (the tab); the app name appears once (Nolli menu); they look different.
+- macOS, Windows, Linux and plain-browser builds each show correct window controls and drag behaviour; tabs never overlap native controls.
+- Light and dark pass WCAG AA contrast for text.
+- Numeric fields keep typing, stepping, Shift ×10, scrub.
+- Documents saved by the old app can be imported (confirm the format with the designer).
 
-- A new user can go from empty project to exported PDF without opening a menu or guessing an icon.
-- Roads appear once in the layer list; no layer inspector needs vertical scrolling for its default-open sections at 811 pt window height.
-- Overridden values are visible without hovering; one click resets a field; one click resets all.
-- No red and blue buttons side by side; destructive actions are the only red.
-- All numeric fields keep typing, arrow stepping, Shift ×10, scrub.
-- Works at 1360 × 811 and larger; panels keep 256/300 pt.
-- Light and dark mode both pass a contrast check (WCAG AA for text).
-- Existing documents open unchanged.
-
-## Open questions (ask the designer, do not guess)
-
-1. Phase tabs in the toolbar centre or left? Phases free-jump or gated until data exists? (Recommended: free-jump.)
-2. Should clicking the map in Signs phase place a sign directly, or keep the + step?
-3. Dark-mode palette: derive from system colours, or define explicit dark tokens?
-4. The Frame/"Map" settings: one row in the layer list, or a separate Map tab?
-5. If users are mostly experts, is the phase bar too much? Fallback: keep the free-form toolbar and ship only the Area and Export changes.
+## Open questions (ask, don't guess)
+1. Electron or Tauri?
+2. Map renderer: MapLibre, custom, or hybrid? (Run the spike in step 5.)
+3. Phase tabs: toolbar centre (as drawn for Design/Signs) or elsewhere; free-jump or gated?
+4. Does a click on the map in Signs place a sign directly?
+5. Real Nolli logo and wordmark: replace the placeholder monogram when available.
+6. Are projects local files only, or is there an account and cloud sync? The Account button in the titlebar is a placeholder until this is decided.
+7. Import path for old `.mapcraft` documents?
+8. Dark palette: use the proposal in `tokens.css` or design it explicitly?
 
 ## Suggested first message to Claude Code
 
-> Read `REDESIGN-BRIEF.md` and look at `screens/`. Explore the repo, then tell me how each plan step maps to the code and what you would change first. Don't edit anything until I approve the plan for step 1.
+> Read `REDESIGN-BRIEF.md` and look at `screens/`. Explore the repo, then tell me how the plan maps to what exists, which of the open questions block step 1, and what you would do first. Don't edit anything until I approve the plan for step 1.

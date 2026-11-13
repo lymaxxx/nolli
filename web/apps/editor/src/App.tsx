@@ -1,18 +1,17 @@
-import { TextSpike } from './TextSpike';
+import { ProjectFiles } from './ProjectFiles';
 
 /**
- * Milestone M0: there is no editor yet. The page shows the text-shaping spike,
- * which proves the riskiest piece (labels shaped from font bytes and set along
- * a path, in Latin and non-Latin scripts) before anything is built on it.
+ * Milestone M3: the project shell with a live map. Layer and style editing
+ * arrive in the later milestones; the text-shaping sample stays reachable.
  */
 export function App() {
   return (
     <>
       <header className="toolbar">
         <h1>Nolli</h1>
-        <span>Text-on-path spike (milestone M0)</span>
+        <span>Map (milestone M3)</span>
       </header>
-      <TextSpike />
+      <ProjectFiles />
     </>
   );
 }

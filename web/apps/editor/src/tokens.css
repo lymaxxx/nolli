@@ -1,60 +1,58 @@
-/* Nolli redesign tokens for the web app.
-   Light values are converted from DesignTokens.swift (which came from the .pen file).
-   Dark values are PROVISIONAL: the redesign has no dark mode yet, so these were chosen
-   to keep the same roles and have not been reviewed by a designer or contrast-checked. */
-
+/* Nolli design tokens. Light values from nolli-redesign.pen.
+   Dark values are PROPOSED, not designed: review before shipping.
+   Toggle with [data-theme="dark"] and/or prefers-color-scheme. */
 :root {
-  --accent: #2563eb;
-  --accent-soft: #eaf1ff;
-  --warn-bg: #fff6e5;
-  --warn-fg: #9a5b00;
-  --ok: #16a34a;
-  --destructive: #e7000b;
-  --hairline: #ececee;
-  --border: #e5e5e5;
-  --field: #f4f4f5;
-  --text: #18181b;
-  --text-2: #71717a;
-  --text-3: #a1a1aa;
-  --panel: #ffffff;
+  --nolli-accent: #2563eb;
+  --nolli-accent-soft: #eaf1ff;
+  --nolli-warn-bg: #fff6e5;
+  --nolli-warn-fg: #9a5b00;
+  --nolli-ok: #16a34a;
+  --nolli-destructive: #e7000b;
 
-  --left-panel-width: 256px;
-  --right-panel-width: 300px;
-  --toolbar-height: 52px;
-  --status-bar-height: 24px;
-  --layer-row-height: 34px;
-  --control-height: 26px;
-  --property-label-width: 70px;
-  --section-padding-x: 14px;
-  --section-padding-y: 12px;
-  --radius-control: 6px;
-  --radius-row: 8px;
-  --radius-card: 10px;
-  --radius-sheet: 14px;
-  --sheet-width: 420px;
+  --nolli-chrome: #ededf0; /* titlebar */
+  --nolli-panel: #ffffff;
+  --nolli-hairline: #ececee;
+  --nolli-border: #e5e5e5;
+  --nolli-field: #f4f4f5;
+  --nolli-text: #18181b;
+  --nolli-text-2: #71717a;
+  --nolli-text-3: #a1a1aa;
 
-  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-body: 12px;
-  --font-row-title: 13px;
-  --font-inspector-title: 14px;
-  --font-caption: 11px;
-  --font-overline: 11px; /* semibold, uppercase, letter-spacing 0.6px */
+  --nolli-left-panel: 256px;
+  --nolli-right-panel: 300px;
+  --nolli-toolbar-h: 52px;
+  --nolli-statusbar-h: 24px;
+  --nolli-row-h: 34px;
+  --nolli-control-h: 26px;
+  --nolli-label-w: 70px;
+  --nolli-pad-x: 14px;
+  --nolli-pad-y: 12px;
+
+  --nolli-radius-control: 6px;
+  --nolli-radius-row: 8px;
+  --nolli-radius-card: 10px;
+  --nolli-radius-sheet: 14px;
+  --nolli-sheet-w: 420px;
+
+  /* Design file uses Inter. Ship Inter (bundled, not CDN) with a system fallback. */
+  --nolli-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --nolli-fs-caption: 11px;
+  --nolli-fs-body: 12px;
+  --nolli-fs-row: 13px;
+  --nolli-fs-title: 14px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent: #5b8def;
-    --accent-soft: #1c2a4a;
-    --warn-bg: #3a2c10;
-    --warn-fg: #f5c26b;
-    --ok: #4ade80;
-    --destructive: #ff5a5f;
-    --hairline: #2a2a2e;
-    --border: #333338;
-    --field: #27272a;
-    --text: #f4f4f5;
-    --text-2: #a1a1aa;
-    --text-3: #71717a;
-    --panel: #18181b;
-  }
+:root[data-theme="dark"] {
+  --nolli-accent: #5b8cff;
+  --nolli-accent-soft: #1b2a4d;
+  --nolli-warn-bg: #3a2a0a;
+  --nolli-warn-fg: #f5c26b;
+  --nolli-chrome: #111113;
+  --nolli-panel: #18181b;
+  --nolli-hairline: #27272a;
+  --nolli-border: #3f3f46;
+  --nolli-field: #27272a;
+  --nolli-text: #fafafa;
+  --nolli-text-2: #a1a1aa;
+  --nolli-text-3: #71717a;
 }
