@@ -22,6 +22,8 @@ interface MapStatus {
   rotation: number;
   renderMs: number;
   featureCount: number;
+  labelCount: number;
+  labelMs: number;
   tileCount: number;
   missingTiles: number;
 }
@@ -46,6 +48,9 @@ export function MapCanvas({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
+  /** Posts to the worker, holding messages until it says it is listening. */
+  const readyRef = useRef<() => void>(() => {});
+  const postRef = useRef<(message: MainMessage, transfer?: Transferable[]) => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const projectRef = useRef<ProjectSnapshot | null>(project);
   const cameraRef = useRef<CameraPose | null>(null);
@@ -102,7 +107,7 @@ export function MapCanvas({
     inFlightRef.current = true;
     const epoch = (epochRef.current += 1);
     const message: MainMessage = { type: 'draw', camera, epoch };
-    worker.postMessage(message);
+    postRef.current(message);
   }, []);
 
   const updateCamera = useCallback(
@@ -131,8 +136,18 @@ export function MapCanvas({
       const offscreen = canvas.transferControlToOffscreen();
       worker = new Worker(new URL('./render.worker.ts', import.meta.url), { type: 'module' });
       workerRef.current = worker;
+      let ready = false;
+      const waiting: Array<[MainMessage, Transferable[] | undefined]> = [];
+      postRef.current = (message, transfer) => {
+        if (ready) worker.postMessage(message, transfer ?? []);
+        else waiting.push([message, transfer]);
+      };
+      readyRef.current = () => {
+        ready = true;
+        for (const [message, transfer] of waiting.splice(0)) worker.postMessage(message, transfer ?? []);
+      };
       const init: MainMessage = { type: 'init', canvas: offscreen };
-      worker.postMessage(init, [offscreen]);
+      postRef.current(init, [offscreen]);
     } catch {
       queueMicrotask(() => setError('This browser cannot create the offscreen map canvas.'));
       canvas.remove();
@@ -142,6 +157,10 @@ export function MapCanvas({
 
     worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
       const message = event.data;
+      if (message.type === 'ready') {
+        readyRef.current();
+        return;
+      }
       if (message.type === 'error') {
         setError(message.message);
         inFlightRef.current = false;
@@ -157,6 +176,8 @@ export function MapCanvas({
         rotation: message.camera.rotation,
         renderMs: message.renderMs,
         featureCount: message.featureCount,
+        labelCount: message.labelCount,
+        labelMs: message.labelMs,
         tileCount: message.tileCount,
         missingTiles: message.missingTiles,
       });
@@ -192,7 +213,7 @@ export function MapCanvas({
       canvas.style.transform = 'none';
 
       const message: MainMessage = { type: 'surface', width, height, dpr };
-      worker.postMessage(message);
+      postRef.current(message);
       if (!cameraRef.current && projectRef.current) {
         const camera = cameraForProject(projectRef.current);
         cameraRef.current = camera;
@@ -389,7 +410,7 @@ export function MapCanvas({
       cameraRef.current = null;
       renderedRef.current = null;
       if (canvasRef.current) canvasRef.current.style.transform = 'none';
-      worker.postMessage({ type: 'clear' } satisfies MainMessage);
+      postRef.current({ type: 'clear' } satisfies MainMessage);
       return;
     }
 
@@ -399,12 +420,12 @@ export function MapCanvas({
     renderedRef.current = null;
     if (canvasRef.current) canvasRef.current.style.transform = 'none';
 
-    worker.postMessage({
+    postRef.current({
       type: 'project',
       layers: project.layers,
       baseZoom: project.baseZoom,
     } satisfies MainMessage);
-    worker.postMessage({
+    postRef.current({
       type: 'view',
       showTiles: project.settings.showTileBackground,
       tileOpacity: project.settings.tileOpacity,
@@ -450,7 +471,8 @@ export function MapCanvas({
               Z {status.zoom.toFixed(2)} · {Math.round(status.rotation)}°
             </span>
             <span className="map-perf">
-              {status.featureCount.toLocaleString()} features · {status.renderMs.toFixed(0)} ms
+              {status.featureCount.toLocaleString()} features · {status.labelCount.toLocaleString()} labels ·{' '}
+              {status.renderMs.toFixed(0)} ms
               {status.missingTiles > 0 ? ` · ${status.missingTiles} tiles loading` : ''}
             </span>
           </>

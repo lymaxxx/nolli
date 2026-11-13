@@ -91,3 +91,40 @@ export * from './model/layers';
 export * from './model/project';
 export { flattenInt64Dictionary } from './model/int64Dictionary';
 export { loadProject, serializeProject, upgradeProject } from './project/project';
+export { vertexMean, areaCentroid, visualCenter } from './geo/polygonCenter';
+export {
+  TextMeasurer,
+  type FontProvider,
+  type MeasureStyle,
+  type MetricUnit,
+  type TextMetrics,
+} from './text/metrics';
+export {
+  computeLabelLayout,
+  glyphAnglesOK,
+  intersects as rectsIntersect,
+  perpendicularExtent,
+  resolvedText,
+  spanBoxes,
+  stitch,
+  symbolAnchors,
+  unitDirection,
+  type MapLabelLayout,
+  type PlacedIcon,
+  type PlacedLineLabel,
+  type PlacedPointLabel,
+} from './layout/labels';
+export {
+  baselineShift,
+  buildLineLabel,
+  buildPointLabel,
+  type GlyphInstance,
+  type LabelGeometry,
+  type LabelRun,
+} from './render/labelGeometry';
+export {
+  compareLayouts,
+  type Difference,
+  type LayoutComparison,
+  type LayoutDump,
+} from './layout/compare';

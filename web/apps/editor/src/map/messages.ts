@@ -20,6 +20,12 @@ export type MainMessage =
 
 /** Render worker → main thread. */
 export type WorkerMessage =
+  /**
+   * The worker's message listener is attached. The worker's script has a
+   * top-level `await` (HarfBuzz's WebAssembly), and a message that arrives
+   * before the listener exists is silently lost, so nothing is sent until this.
+   */
+  | { type: 'ready' }
   | {
       type: 'drawn';
       camera: CameraPose;
@@ -27,6 +33,9 @@ export type WorkerMessage =
       epoch: number | null;
       renderMs: number;
       featureCount: number;
+      labelCount: number;
+      /** How long placing the labels took, in milliseconds; 0 until they are placed. */
+      labelMs: number;
       tileCount: number;
       missingTiles: number;
     }

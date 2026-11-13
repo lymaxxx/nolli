@@ -29,6 +29,11 @@ export interface ShapedUnit {
   end: number;
   /** True when the unit holds only white space (nothing to draw). */
   isSpace: boolean;
+  /**
+   * True for a whole word of a joined script. It moves as one piece, so it
+   * cannot follow a bend inside its own length the way separate letters can.
+   */
+  rigid: boolean;
 }
 
 /** A shaped line: units in visual order, left to right, whatever the scripts' directions. */
@@ -202,7 +207,7 @@ function shapeRun(text: string, run: Run, font: LoadedFont): ShapedUnit[] {
     const sameCluster = current !== undefined && info.cluster === currentCluster;
     const sameWord = cursive && current !== undefined && !current.isSpace && !isSpace;
     if (!current || !(sameCluster || sameWord)) {
-      current = { glyphs: [], advance: 0, start, end, isSpace };
+      current = { glyphs: [], advance: 0, start, end, isSpace, rigid: cursive && !isSpace };
       units.push(current);
     }
     currentCluster = info.cluster;

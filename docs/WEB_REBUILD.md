@@ -2,7 +2,7 @@
 
 Goal: a Figma-style editor in the browser with the features of the macOS app, wrapped for Mac, Windows and Linux, aimed at graphic and wayfinding designers working on urban areas and small public spaces. Features beyond parity with the macOS app, and Illustrator integration, are in [ROADMAP.md](ROADMAP.md).
 
-**Status:** milestones M0, M1, M2 and M3 are done. The thin Electron shell opens `.nolli` and legacy `.mapcraft` projects, saves `.nolli`, and draws the project on a live map over OpenStreetMap tiles. The camera, tiles, vectors and markers share one transform, so they cannot drift. Everything after M3 is a plan.
+**Status:** milestones M0, M1, M2 and M3 are done. M4 is half done: the label engine and label drawing are ported and tested, but placement has not been compared with the macOS app (see `parity/README.md`). The thin Electron shell opens `.nolli` and legacy `.mapcraft` projects, saves `.nolli`, and draws the project on a live map over OpenStreetMap tiles. The camera, tiles, vectors and markers share one transform, so they cannot drift. Everything after M3 is a plan.
 
 ## Goals
 
@@ -110,7 +110,7 @@ Paths are in `macos/Nolli/`. Line counts are from the current source and show wh
 | `Services/OSMFetcher` | 205 | `data/overpass` | Includes multipolygon assembly. The default server answers browser requests (tested: HTTP 200 with `access-control-allow-origin: *`; the other public server was busy but sent the same header) |
 | `Services/GeocoderService` | 45 | `data/geocode` | Nominatim; browser requests allowed (tested). Its usage policy still applies |
 | `Services/TileStore` | 156 | `core/tiles`, `apps/editor/map/tileStore.ts` | **Done.** Coverage and parent fallback in core; fetch, IndexedDB and an LRU of `ImageBitmap`s in the editor |
-| **`Views/LabelRendering`** | **878** | **`layout/labels`** | **The hardest part.** Text on a path with bend, repeat and overlap rules, stitching of ways, pins |
+| **`Views/LabelRendering`** | **878** | **`core/layout/labels`, `core/text/metrics`** | **Ported, not yet compared with macOS.** Text on a path with bend, repeat and overlap rules, stitching of ways, pins, icons |
 | `Views/SceneRenderer` | 701 | `core/render/scene`, `apps/editor/map/drawScene.ts` | **Done for geometry.** Compiles layers into artwork-space cells and draws them through one CTM; labels are M4 |
 | `Views/MapSurfaceView` | 1,111 | `apps/editor/map/MapCanvas.tsx` | **Camera and gestures done.** Worker rendering, CSS-transformed bitmap during gestures, HUD and controls; editing arrives later |
 | `Services/SVGExporter` (includes the Illustrator script) | 823 | `export/svg`, `export/jsx` | Mostly string building; straightforward once layout exists |
@@ -163,7 +163,7 @@ Each one ends with something that can be opened and checked.
 | M1 | Model and loader | **Done.** A real version 6 `.mapcraft` project loads, saves as version 7 `.nolli`, and the native Swift decoder accepts the result |
 | M2 | Desktop shell (thin) | **Done.** Electron opened a real `.mapcraft` and a saved `.nolli`, and rewrote the `.nolli` in place; the renderer reported 7 layers and 3,275 features |
 | M3 | Camera, vector rendering, tiles, gestures | **Done.** The real 3,275-feature project drew over OpenStreetMap tiles at zoom 17. Wheel zoom, drag pan, Option-drag rotation, fit and reset-north were exercised in Electron, and tiles stayed aligned with vectors through rotation. Labels wait for M4 |
-| M4 | Label engine | Placement matches the macOS fixtures within tolerance |
+| M4 | Label engine | **Engine and drawing done; parity not checked.** Placement matches the macOS dump within tolerance (needs a dump from a Mac, `parity/`) |
 | M5 | Style phase | Layers, inspectors, chips, overrides, colour panel, undo |
 | M6 | Area phase and data | Search, draw area, Overpass fetch, refresh that keeps manual edits |
 | M7 | Edit mode | Slide, pin, vertex edit, reset; reasons for dropped labels |
@@ -177,3 +177,7 @@ M1 was checked against a real version 6 `.mapcraft` project with seven layers, r
 M3 was checked in the built Electron app against the same seven-layer, 3,275-feature project. It opened at zoom 17 and the bounding-box centre, compiled the scene in 5–10 ms and drew it over OpenStreetMap tiles. Wheel zoom, drag pan, Option-drag rotation, Fit and Reset north all moved the camera as expected, and tiles stayed registered with the vectors through a −14° rotation. Reopening the saved `.nolli`, moving the camera and saving again wrote the live zoom, rotation and centre back into the file (17.45, 23°, bounding-box centre). OpenStreetMap rejects a `file://` Referer with a 403 "Access blocked" tile, so the desktop main process strips that header and sends `Nolli/0.1 (wayfinding map editor)` as the User-Agent. The tile cache is an in-memory LRU backed by IndexedDB, with parent-tile fallback while a tile loads; cache writes are best-effort. Labels, editing, style panels and the mouse-coordinate readout are not part of M3.
 
 The committed current-version fixture was generated with the native Swift models and `JSONEncoder`, and the sparse v6 fixture was derived from it to exercise the upgrader. They contain fabricated locations and ids, not user project data.
+
+M4 so far: `core/layout/labels.ts` is a function-by-function port of `LabelLayoutEngine` (icons first, hand-placed names next, then layer by layer; stitching, bend limits, sliding, repeat distance, margins, overlap modes, point and area labels, icon binding), and `core/render/labelGeometry.ts` ports the glyph placement of `LabelBuilder`. Both have unit tests built from the Swift rules (55 new tests: 38 for layout, 12 for glyph placement, 5 for the comparison tool; 143 in `web/` in total). The editor places labels in the render worker after the first draw and draws them over the vectors; road names flip to stay readable as the view rotates. Checked in Chromium on a synthetic project of 1,200 roads, 1,900 buildings and 40 points, including Arabic names and bold type: about 170 ms to place once fonts and names are warm, about 2.3 s the first time, almost all of it shaping every name. Not checked: placement against the macOS app, labels in Electron or Safari, and any real project. Icons are placed but not drawn. Fonts are a placeholder (every project font resolves to Noto Sans), so widths and letterforms differ from the macOS app.
+
+While wiring this up a startup race in the map was found and fixed: the render worker loads HarfBuzz's WebAssembly with a top-level `await`, so messages the page sent before the worker's listener existed were silently lost, and the map sometimes never drew. The worker now announces `ready` and the page queues messages until then. 12 of 12 fresh page loads draw after the fix; before it, roughly half of the runs here stuck.

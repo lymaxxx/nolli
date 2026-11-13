@@ -1,12 +1,20 @@
 import {
+  buildLineLabel,
+  buildPointLabel,
   compileScene,
+  computeLabelLayout,
   OSM_STANDARD,
   projectionOf,
+  TextMeasurer,
   type CameraPose,
+  type LabelGeometry,
+  type LayerSnapshot,
   type RasterXYZSource,
   type Scene,
 } from '@nolli/core';
+import { drawLabels } from './drawLabels';
 import { drawScene } from './drawScene';
+import { loadFontProvider } from './fonts';
 import { drawTiles } from './drawTiles';
 import type { MainMessage, WorkerMessage } from './messages';
 import { surfaceMetrics } from './surface';
@@ -25,6 +33,9 @@ const scope = self as unknown as WorkerScope;
 let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
 let scene: Scene | null = null;
+let labels: LabelGeometry[] = [];
+let labelMs = 0;
+let labelToken = 0;
 let camera: CameraPose | null = null;
 let viewport = { width: 0, height: 0 };
 let dpr = 1;
@@ -50,7 +61,10 @@ function drawNow(epoch: number | null): void {
     showTiles && tileOpacity > 0
       ? drawTiles(ctx, projection, source, loader, metrics, tileOpacity)
       : { tileCount: 0, missingTiles: 0 };
-  if (scene) drawScene(ctx, scene, projection, metrics);
+  if (scene) {
+    drawScene(ctx, scene, projection, metrics);
+    drawLabels(ctx, labels, scene, projection, metrics);
+  }
 
   scope.postMessage({
     type: 'drawn',
@@ -58,9 +72,47 @@ function drawNow(epoch: number | null): void {
     epoch,
     renderMs: performance.now() - started,
     featureCount: scene?.featureCount ?? 0,
+    labelCount: labels.length,
+    labelMs,
     tileCount: tiles.tileCount,
     missingTiles: tiles.missingTiles,
   });
+}
+
+let fontProvider: ReturnType<typeof loadFontProvider> | null = null;
+
+/**
+ * Places labels for a project and turns them into glyphs. Runs after the first
+ * draw so the map appears at once and the names follow.
+ */
+async function buildLabels(layers: LayerSnapshot[], baseZoom: number, token: number): Promise<void> {
+  try {
+    fontProvider ??= loadFontProvider();
+    const provider = await fontProvider;
+    if (token !== labelToken || !scene) return;
+    const started = performance.now();
+    const layout = computeLabelLayout(layers, baseZoom, 1, new TextMeasurer(provider));
+    const origin = scene.origin;
+    const built: LabelGeometry[] = [];
+    const seen = new Map<string, number>();
+    for (const placed of layout.lineLabels) {
+      const streetKey = `${placed.layerId}|${placed.featureId}`;
+      const index = seen.get(streetKey) ?? 0;
+      seen.set(streetKey, index + 1);
+      built.push(buildLineLabel(placed, index, placed.centerDist, origin));
+    }
+    for (const placed of layout.pointLabels) built.push(buildPointLabel(placed, origin));
+    if (token !== labelToken) return;
+    labels = built;
+    labelMs = performance.now() - started;
+    drawNow(null);
+  } catch (error) {
+    if (token !== labelToken) return;
+    scope.postMessage({
+      type: 'error',
+      message: `Labels could not be placed: ${error instanceof Error ? error.message : String(error)}`,
+    });
+  }
 }
 
 /** Tile arrivals redraw at most once a frame; they never queue up. */
@@ -97,7 +149,11 @@ scope.addEventListener('message', (event) => {
     case 'project': {
       try {
         scene = compileScene(message.layers, message.baseZoom);
+        labels = [];
+        labelMs = 0;
+        labelToken += 1;
         drawNow(null);
+        void buildLabels(message.layers, message.baseZoom, labelToken);
       } catch (error) {
         scene = null;
         scope.postMessage({
@@ -116,6 +172,8 @@ scope.addEventListener('message', (event) => {
       break;
     }
     case 'clear': {
+      labelToken += 1;
+      labels = [];
       scene = null;
       camera = null;
       drawNow(null);
@@ -128,3 +186,6 @@ scope.addEventListener('message', (event) => {
     }
   }
 });
+
+// Tell the page the listener above exists; see `WorkerMessage`.
+scope.postMessage({ type: 'ready' });
