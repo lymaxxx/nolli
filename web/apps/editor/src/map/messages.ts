@@ -1,5 +1,6 @@
 import type {
   CameraPose,
+  LayerLabelFit,
   LayerSnapshot,
   RasterXYZSource,
 } from '@nolli/core';
@@ -13,6 +14,7 @@ export type MainMessage =
       type: 'view';
       showTiles: boolean;
       tileOpacity: number;
+      background: string | null;
       source: RasterXYZSource;
     }
   | {
@@ -43,5 +45,6 @@ export type WorkerMessage =
       labelMs: number;
       tileCount: number;
       missingTiles: number;
+      labelFits: Record<string, LayerLabelFit>;
     }
   | { type: 'error'; message: string };

@@ -1,5 +1,6 @@
 import {
   cameraForProject,
+  cssColor,
   fitBounds,
   OSM_STANDARD,
   panBy,
@@ -11,6 +12,7 @@ import {
   toCssMatrix,
   zoomAround,
   type CameraPose,
+  type LayerLabelFit,
   type ProjectSnapshot,
 } from '@nolli/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -41,13 +43,18 @@ interface PointerPosition {
  */
 export function MapCanvas({
   project,
+  projectSession = 0,
   fonts = [],
   onCameraChange,
+  onLabelFitsChange,
 }: {
   project: ProjectSnapshot | null;
+  /** Bumped when a new project file is opened, so style edits do not reset the camera. */
+  projectSession?: number;
   /** Font files for project fonts; road names are set in these where they match. */
   fonts?: readonly { family: string; style: string; data: ArrayBuffer }[];
   onCameraChange?: (camera: CameraPose) => void;
+  onLabelFitsChange?: (fits: Record<string, LayerLabelFit>) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -56,6 +63,8 @@ export function MapCanvas({
   const postRef = useRef<(message: MainMessage, transfer?: Transferable[]) => void>(() => {});
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const projectRef = useRef<ProjectSnapshot | null>(project);
+  const sessionRef = useRef<number>(-1);
+  const lastArtboardRotationRef = useRef<number | null>(null);
   const cameraRef = useRef<CameraPose | null>(null);
   const renderedRef = useRef<CameraPose | null>(null);
   const viewportRef = useRef({ width: 0, height: 0 });
@@ -63,12 +72,17 @@ export function MapCanvas({
   const queuedRef = useRef(false);
   const epochRef = useRef(0);
   const onCameraChangeRef = useRef(onCameraChange);
+  const onLabelFitsChangeRef = useRef(onLabelFitsChange);
   const [status, setStatus] = useState<MapStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     onCameraChangeRef.current = onCameraChange;
   }, [onCameraChange]);
+
+  useEffect(() => {
+    onLabelFitsChangeRef.current = onLabelFitsChange;
+  }, [onLabelFitsChange]);
 
   const applyTransform = useCallback(() => {
     const canvas = canvasRef.current;
@@ -184,6 +198,7 @@ export function MapCanvas({
         tileCount: message.tileCount,
         missingTiles: message.missingTiles,
       });
+      onLabelFitsChangeRef.current?.(message.labelFits);
 
       const current = cameraRef.current;
       if (current && !sameCamera(message.camera, current)) {
@@ -410,6 +425,8 @@ export function MapCanvas({
     if (!worker) return;
 
     if (!project) {
+      sessionRef.current = -1;
+      lastArtboardRotationRef.current = null;
       cameraRef.current = null;
       renderedRef.current = null;
       if (canvasRef.current) canvasRef.current.style.transform = 'none';
@@ -417,11 +434,28 @@ export function MapCanvas({
       return;
     }
 
-    const camera = cameraForProject(project);
-    cameraRef.current = camera;
-    onCameraChangeRef.current?.(camera);
-    renderedRef.current = null;
-    if (canvasRef.current) canvasRef.current.style.transform = 'none';
+    if (sessionRef.current !== projectSession || !cameraRef.current) {
+      sessionRef.current = projectSession;
+      lastArtboardRotationRef.current = project.artboardRotation;
+      const camera = cameraForProject(project);
+      cameraRef.current = camera;
+      onCameraChangeRef.current?.(camera);
+      renderedRef.current = null;
+      if (canvasRef.current) canvasRef.current.style.transform = 'none';
+    } else if (lastArtboardRotationRef.current !== project.artboardRotation) {
+      lastArtboardRotationRef.current = project.artboardRotation;
+      const delta = project.artboardRotation - cameraRef.current.rotation;
+      if (Math.abs(delta) > 1e-4) {
+        const nextCamera = rotateBy(cameraRef.current, delta);
+        cameraRef.current = nextCamera;
+        onCameraChangeRef.current?.(nextCamera);
+      }
+    }
+
+    const background =
+      project.artboardBackgroundEnabled && project.artboardBackground
+        ? cssColor(project.artboardBackground)
+        : null;
 
     postRef.current({
       type: 'project',
@@ -432,10 +466,11 @@ export function MapCanvas({
       type: 'view',
       showTiles: project.settings.showTileBackground,
       tileOpacity: project.settings.tileOpacity,
+      background,
       source: OSM_STANDARD,
     } satisfies MainMessage);
     requestDraw();
-  }, [project, requestDraw]);
+  }, [project, projectSession, requestDraw]);
 
   // Send font files to the worker. Each send carries copies, so the page keeps its own bytes.
   useEffect(() => {
@@ -507,6 +542,19 @@ export function MapCanvas({
         </button>
       </div>
       {showTiles && <p className="map-attribution">© OpenStreetMap contributors</p>}
+      {project?.showNorthArrow && (
+        <div
+          className={`north-arrow north-arrow-${project.northArrowPosition}`}
+          data-testid="north-arrow"
+          title="North arrow"
+          style={{ transform: `rotate(${-(status?.rotation ?? 0)}deg)` }}
+        >
+          <span>N</span>
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path d="M8 2L12.5 13L8 10.5L3.5 13L8 2Z" fill="currentColor" />
+          </svg>
+        </div>
+      )}
       {error && (
         <p className="map-error" role="alert">
           {error}

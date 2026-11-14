@@ -60,6 +60,96 @@ export interface MapLabelLayout {
   icons: PlacedIcon[];
 }
 
+function placementStyleKey(style: LabelStyle): string {
+  return [
+    style.enabled ? 1 : 0,
+    style.isVisible ? 1 : 0,
+    style.tagKey,
+    style.fallbackTagKey,
+    style.fontName,
+    style.fontWeight,
+    style.fontSize,
+    style.typeCase,
+    style.tracking,
+    style.wordSpacing,
+    style.placement,
+    style.offsetX,
+    style.offsetY,
+    style.lineLabelMode,
+    style.linePosition,
+    style.distanceFromLine,
+    style.repeatInterval,
+    style.minSpacing,
+    style.maxCharAngle,
+    style.overlapMode,
+    style.showAllLabels ? 1 : 0,
+    style.priority,
+    style.bufferEnabled ? style.haloWidth : 0,
+    style.calloutsEnabled ? style.calloutMinDistance : -1,
+  ].join(':');
+}
+
+function mapEntriesKey(map: ReadonlyMap<number, unknown>): string {
+  if (map.size === 0) return '';
+  return [...map.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+    .join(',');
+}
+
+/**
+ * Key of everything that affects label and icon placement, ported from
+ * `LabelLayoutCache` in `LabelRendering.swift`. Changing colours, opacities,
+ * road widths or area fills leaves this key unchanged so layout does not rerun.
+ */
+export function labelPlacementKey(
+  layers: readonly LayerSnapshot[],
+  baseZoom: number,
+  labelScale = 1,
+): string {
+  const parts: string[] = [`${baseZoom}|${labelScale}`];
+  for (const layer of layers) {
+    const sym = layer.symbolStyle;
+    parts.push(
+      [
+        layer.id,
+        layer.kind,
+        layer.isVisible ? 1 : 0,
+        layer.lineFeatures.length,
+        layer.polygonFeatures.length,
+        layer.pointFeatures.length,
+        placementStyleKey(layer.labelStyle),
+        layer.roadSubLayers
+          .map(
+            (sub) =>
+              `${sub.id}:${sub.isVisible ? 1 : 0}:${sub.roadTypes.join(',')}:${
+                sub.labelStyle ? placementStyleKey(sub.labelStyle) : ''
+              }`,
+          )
+          .join('/'),
+        mapEntriesKey(layer.labelOffsets),
+        mapEntriesKey(layer.symbolOffsets),
+        mapEntriesKey(layer.labelPins),
+        mapEntriesKey(layer.labelAlongOffsets),
+        sym.enabled ? 1 : 0,
+        sym.isVisible ? 1 : 0,
+        sym.width,
+        sym.height,
+        sym.iconId ?? '',
+        sym.inlineSVGData ? 1 : 0,
+        sym.anchorPoint,
+        sym.collisionMargin,
+        sym.allowOverlapWithOtherLayers ? 1 : 0,
+        sym.bindToLabels ? 1 : 0,
+        sym.labelLayout,
+        sym.iconTextGap,
+        sym.textAlignment,
+      ].join(';'),
+    );
+  }
+  return parts.join('\n');
+}
+
 interface LineJob {
   layerId: string;
   subId?: string;

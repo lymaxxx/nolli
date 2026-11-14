@@ -1,17 +1,9 @@
 import { ProjectFiles } from './ProjectFiles';
 
 /**
- * Milestone M3: the project shell with a live map. Layer and style editing
- * arrive in the later milestones; the text-shaping sample stays reachable.
+ * Milestone M5: Style phase editor with layers, per-type road chips and
+ * overrides, colour panel, fonts library and undo/redo over the live map.
  */
 export function App() {
-  return (
-    <>
-      <header className="toolbar">
-        <h1>Nolli</h1>
-        <span>Map (milestone M3)</span>
-      </header>
-      <ProjectFiles />
-    </>
-  );
+  return <ProjectFiles />;
 }

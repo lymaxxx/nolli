@@ -72,6 +72,17 @@ Milestone M3:
 
 - `core/projection`, `core/camera`, `core/tiles` and `core/render/scene`: Web Mercator maths, one camera, tile coverage with parent-tile fallback, and a pure compiler that turns layers into artwork-space geometry.
 - `apps/editor`: a render worker draws tiles and vectors through one transform into an `OffscreenCanvas`. During gestures the finished bitmap follows the pointer with a CSS matrix until the next frame arrives. The workspace adds zoom, fit and reset-north controls, and saving writes the live camera back into the `.nolli`.
-- Checked in the built Electron app with the real project: 3,275 features drew over OpenStreetMap tiles, wheel zoom, drag pan, Option-drag rotation, fit and reset north worked, and tiles stayed aligned with vectors through rotation. Labels are M4; layer and style editing are still later work.
+- Checked in the built Electron app with the real project: 3,275 features drew over OpenStreetMap tiles, wheel zoom, drag pan, Option-drag rotation, fit and reset north worked, and tiles stayed aligned with vectors through rotation.
+
+Milestone M4:
+
+- `core/layout/labels`, `core/render/labelGeometry`, `core/text/metrics`, `core/text/registry` and `core/layout/compare`: full port of `LabelLayoutEngine` and `LabelBuilder` (icons first, hand-pinned road names, layer priority, road stitching, bend limits, sliding, repeat distance, margins, overlap modes, point and area labels, icon binding, font matching and `labelPlacementKey` caching).
+- `apps/editor`: places labels in the render worker, draws them over the vectors through the artwork CTM, flips curved road labels to stay upright when rotated, and provides the Fonts panel (`queryLocalFonts` and uploaded font files).
+- Checked against native macOS `LabelLayoutEngine` dumps (`0.5 px` on the committed Noto Sans fixture in `compare.test.ts`; 188 of 191 road labels within `1.0 px` on the real 3,275-feature project) and in Electron at 0° and 180° rotation.
+
+Milestone M5:
+
+- `core/model/inheritance`, `core/model/color` and `core/store/documentStore`: Figma-style per-field override inheritance and migration for road subtypes, RGB/HEX/HSB/CMYK colour conversions, whole-map colour schemes, reusable text style presets, and an immutable undo/redo store with slider-drag coalescing.
+- `apps/editor/src/style`: two-tier window chrome, `Layers` and `Library` left panel, `Map` and `Layer` right inspectors, road type chips with override dots, `Line | Labels` tabs, amber dropped-label fit banner, per-field override reset dots and `"N values differ from All roads"` bar, collapsible sections, and the colour popover. Checked in Electron with Playwright against the real project.
 
 The fonts used by the tests and the sample page (Noto Sans, Noto Sans Arabic; SIL Open Font License) come from npm as dev dependencies. No font files are committed.

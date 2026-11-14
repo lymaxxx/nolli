@@ -1,6 +1,15 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { loadProject } from '../project/project';
+import { notoSans } from '../testing/fonts';
+import { TextMeasurer } from '../text/metrics';
+import { FontRegistry } from '../text/registry';
 import { compareLayouts, type LayoutDump } from './compare';
-import type { MapLabelLayout, PlacedLineLabel } from './labels';
+import { computeLabelLayout, type MapLabelLayout, type PlacedLineLabel } from './labels';
+
+const fixturesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
 const line = (over: Partial<PlacedLineLabel> = {}): PlacedLineLabel =>
   ({
@@ -73,5 +82,23 @@ describe('compareLayouts', () => {
     expect(compareLayouts(d, same).identical).toBe(true);
     const off: MapLabelLayout = { ...same, icons: [{ layerId: 'abc', featureId: 7, point: { x: 30, y: 20 } }] };
     expect(compareLayouts(d, off).moved).toHaveLength(1);
+  });
+
+  it('matches the macOS LabelLayoutEngine dump for a multi-layer Noto Sans fixture within 0.5 px', () => {
+    const project = loadProject(readFileSync(path.join(fixturesDir, 'macos-noto-project.json'), 'utf8'));
+    const expected = JSON.parse(readFileSync(path.join(fixturesDir, 'macos-noto-dump.json'), 'utf8')) as LayoutDump;
+    const font = notoSans();
+    const registry = new FontRegistry({ regular: [font], bold: [font] });
+    registry.add('Noto Sans', 'Regular', font);
+    const actual = computeLabelLayout(project.layers, project.baseZoom, 1, new TextMeasurer(registry));
+
+    const comparison = compareLayouts(expected, actual, 0.5);
+    expect(comparison).toEqual({
+      matched: 7,
+      missing: [],
+      extra: [],
+      moved: [],
+      identical: true,
+    });
   });
 });

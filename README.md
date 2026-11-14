@@ -46,7 +46,7 @@ What has **not** been checked in the macOS app:
 
 The macOS app has no automated tests.
 
-The web rebuild has completed milestones M0–M3 and about half of M4: labels are placed and drawn, but their placement has not been compared with the macOS app (`docs/parity/`). The thin Electron shell opens `.nolli` and legacy `.mapcraft` projects, saves `.nolli`, and draws the project on a live map over OpenStreetMap tiles. One camera drives tiles, vectors and markers, so panning, zooming and rotating cannot pull them apart; saving writes the current camera back into the file. There is still no layer editing, and label parity with macOS is unchecked: the page is a map-first project shell, with the text-engine sample (road names shaped from font bytes and set along a path, including right-to-left scripts) available from it. The browser page was checked in Chromium, and the Electron shell was driven on macOS with Playwright against the real project.
+The web rebuild has completed milestones M0–M5. The Electron shell and browser editor open `.nolli` and legacy `.mapcraft` projects, save `.nolli`, draw the project and its curved road, area and point labels over OpenStreetMap tiles through one camera transform, and implement the redesigned Style phase: layer list, Map inspector, road type chips with per-field overrides, collapsible style and label inspectors, colour panel (HEX/RGB/HSB/CMYK, swatches, whole-map colour schemes), Fonts library and undo/redo. Label placement has been verified against native macOS `LabelLayoutEngine` dumps and in Electron on the real 3,275-feature project. Area fetching (M6), interactive edit mode (M7), signs (M8) and exporters (M9) are still ahead.
 
 ## Data and licences
 

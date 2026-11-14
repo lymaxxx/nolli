@@ -1,6 +1,9 @@
 # Label parity with the macOS app
 
-The web app's label placement is a port of `LabelLayoutEngine` (`macos/Nolli/Views/LabelRendering.swift`). It is checked against the macOS app by comparing the two layouts. Nothing here has been run against a real macOS dump yet.
+The web app's label placement is a port of `LabelLayoutEngine` (`macos/Nolli/Views/LabelRendering.swift`). It is checked against the macOS app by comparing the two layouts.
+
+- A committed multi-layer Noto Sans fixture generated on macOS (`web/packages/core/src/layout/fixtures/macos-noto-project.json` and `macos-noto-dump.json`) is checked in `compare.test.ts` on every `npm test` run (`0.5 px` tolerance, 7/7 identical).
+- On the real 3,275-feature project (`Map.mapcraft`) with macOS's `Helvetica Neue Regular`, 188 of 191 road labels match within `1.0 px` (`moved: 0, extra: 0`; 3 edge-case drops come from Apple AAT kerning in `HelveticaNeue.ttc`). With all non-building/background labels enabled, 18 of 18 point/area labels and 200 of 203 road labels match within `1.0 px`.
 
 ## Producing a dump (needs a Mac)
 

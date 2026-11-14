@@ -4,12 +4,15 @@ import {
   compileScene,
   computeLabelLayout,
   FontRegistry,
+  labelPlacementKey,
+  layerLabelFit,
   LoadedFont,
   OSM_STANDARD,
   projectionOf,
   TextMeasurer,
   type CameraPose,
   type LabelGeometry,
+  type LayerLabelFit,
   type LayerSnapshot,
   type RasterXYZSource,
   type Scene,
@@ -36,6 +39,10 @@ let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
 let scene: Scene | null = null;
 let labels: LabelGeometry[] = [];
+let labelFits: Record<string, LayerLabelFit> = {};
+let lastPlacementKey: string | null = null;
+/** The scene origin the current label geometry is relative to; if it changes, the geometry must be rebuilt. */
+let labelsOrigin: { x: number; y: number } | null = null;
 let labelMs = 0;
 let labelToken = 0;
 let camera: CameraPose | null = null;
@@ -44,6 +51,7 @@ let dpr = 1;
 let source: RasterXYZSource = OSM_STANDARD;
 let showTiles = true;
 let tileOpacity = 1;
+let background: string | null = null;
 let redrawTimer: ReturnType<typeof setTimeout> | null = null;
 
 const loader = new TileLoader(source, () => scheduleRedraw());
@@ -63,6 +71,11 @@ function drawNow(epoch: number | null): void {
     showTiles && tileOpacity > 0
       ? drawTiles(ctx, projection, source, loader, metrics, tileOpacity)
       : { tileCount: 0, missingTiles: 0 };
+  if (background) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
   if (scene) {
     drawScene(ctx, scene, projection, metrics);
     drawLabels(ctx, labels, scene, projection, metrics);
@@ -78,6 +91,7 @@ function drawNow(epoch: number | null): void {
     labelMs,
     tileCount: tiles.tileCount,
     missingTiles: tiles.missingTiles,
+    labelFits,
   });
 }
 
@@ -85,6 +99,20 @@ let fallbackFonts: ReturnType<typeof loadFallbackFonts> | null = null;
 let fontFiles: { family: string; style: string; data: ArrayBuffer }[] = [];
 let layers: LayerSnapshot[] = [];
 let layersBaseZoom = 15;
+
+/** Refreshes paint-only label style fields when placement itself has not changed (`LabelLayoutCache`). */
+function refreshLabelPaintStyles(): void {
+  const byLayer = new Map<string, LayerSnapshot>();
+  for (const layer of layers) byLayer.set(layer.id, layer);
+  labels = labels.map((label) => {
+    const layer = byLayer.get(label.layerId);
+    if (!layer) return label;
+    const style = label.subId
+      ? (layer.roadSubLayers.find((sub) => sub.id === label.subId)?.labelStyle ?? layer.labelStyle)
+      : layer.labelStyle;
+    return { ...label, style };
+  });
+}
 
 /** The registry for the project's font files, with the built-in fonts behind it. */
 async function currentRegistry(): Promise<FontRegistry> {
@@ -104,7 +132,7 @@ async function currentRegistry(): Promise<FontRegistry> {
  * Places labels for the current project and turns them into glyphs. Runs after
  * the first draw so the map appears at once and the names follow.
  */
-async function buildLabels(token: number): Promise<void> {
+async function buildLabels(token: number, placementKey: string): Promise<void> {
   try {
     const registry = await currentRegistry();
     if (token !== labelToken || !scene) return;
@@ -120,8 +148,15 @@ async function buildLabels(token: number): Promise<void> {
       built.push(buildLineLabel(placed, index, placed.centerDist, origin));
     }
     for (const placed of layout.pointLabels) built.push(buildPointLabel(placed, origin));
+    const fits: Record<string, LayerLabelFit> = {};
+    for (const layer of layers) {
+      fits[layer.id] = layerLabelFit(layer, layout);
+    }
     if (token !== labelToken) return;
     labels = built;
+    labelFits = fits;
+    lastPlacementKey = placementKey;
+    labelsOrigin = { x: origin.x, y: origin.y };
     labelMs = performance.now() - started;
     drawNow(null);
   } catch (error) {
@@ -167,13 +202,20 @@ scope.addEventListener('message', (event) => {
     case 'project': {
       try {
         scene = compileScene(message.layers, message.baseZoom);
-        labels = [];
-        labelMs = 0;
         layers = message.layers;
         layersBaseZoom = message.baseZoom;
-        labelToken += 1;
-        drawNow(null);
-        void buildLabels(labelToken);
+        const nextPlacementKey = labelPlacementKey(layers, layersBaseZoom, 1);
+        // Label geometry is relative to the scene origin, so reuse it only if the origin is unchanged.
+        const sameOrigin =
+          labelsOrigin !== null && labelsOrigin.x === scene.origin.x && labelsOrigin.y === scene.origin.y;
+        if (nextPlacementKey === lastPlacementKey && sameOrigin) {
+          refreshLabelPaintStyles();
+          drawNow(null);
+        } else {
+          labelToken += 1;
+          drawNow(null);
+          void buildLabels(labelToken, nextPlacementKey);
+        }
       } catch (error) {
         scene = null;
         scope.postMessage({
@@ -186,6 +228,7 @@ scope.addEventListener('message', (event) => {
     case 'view': {
       showTiles = message.showTiles;
       tileOpacity = message.tileOpacity;
+      background = message.background;
       source = message.source;
       loader.setSource(source);
       scheduleRedraw();
@@ -193,10 +236,11 @@ scope.addEventListener('message', (event) => {
     }
     case 'fonts': {
       fontFiles = message.fonts;
+      lastPlacementKey = null;
       if (scene) {
         // Keep the old labels on screen until the new ones are ready.
         labelToken += 1;
-        void buildLabels(labelToken);
+        void buildLabels(labelToken, labelPlacementKey(layers, layersBaseZoom, 1));
       }
       break;
     }
@@ -204,6 +248,9 @@ scope.addEventListener('message', (event) => {
       layers = [];
       labelToken += 1;
       labels = [];
+      labelFits = {};
+      lastPlacementKey = null;
+      labelsOrigin = null;
       scene = null;
       camera = null;
       drawNow(null);
