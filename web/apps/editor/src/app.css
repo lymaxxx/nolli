@@ -849,6 +849,11 @@ select {
   flex: none;
 }
 
+/* A unit such as "mm" or "dpi" needs room beside three digits. */
+.number-field:has(.number-unit) {
+  width: 84px;
+}
+
 .number-prefix,
 .number-unit {
   color: var(--nolli-text-3);
@@ -1498,4 +1503,19 @@ select {
   gap: 8px;
   align-items: center;
   margin-top: 4px;
+}
+
+.export-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--nolli-pad-y) var(--nolli-pad-x);
+}
+
+.export-actions .primary {
+  width: 100%;
+}
+
+.hint.warn {
+  color: var(--nolli-warn-fg);
 }

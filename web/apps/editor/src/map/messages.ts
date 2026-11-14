@@ -1,5 +1,7 @@
 import type {
   CameraPose,
+  ProjectSnapshot,
+  SvgExportOptions,
   LayerLabelFit,
   LayerSnapshot,
   RasterXYZSource,
@@ -21,6 +23,13 @@ export type MainMessage =
       /** Font files for project fonts. Replaces any sent before; labels are placed again. */
       type: 'fonts';
       fonts: { family: string; style: string; data: ArrayBuffer }[];
+    }
+  | {
+      /** Lays out and writes an SVG of `project`; answered by `svg` or `exportError` with the same id. */
+      type: 'exportSvg';
+      id: number;
+      project: ProjectSnapshot;
+      options: SvgExportOptions;
     }
   | { type: 'clear' }
   | { type: 'draw'; camera: CameraPose; epoch: number };
@@ -47,4 +56,6 @@ export type WorkerMessage =
       missingTiles: number;
       labelFits: Record<string, LayerLabelFit>;
     }
+  | { type: 'svg'; id: number; svg: string }
+  | { type: 'exportError'; id: number; message: string }
   | { type: 'error'; message: string };

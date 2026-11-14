@@ -3,6 +3,7 @@ import {
   buildPointLabel,
   compileScene,
   computeLabelLayout,
+  exportSVG,
   FontRegistry,
   labelPlacementKey,
   layerLabelFit,
@@ -242,6 +243,24 @@ scope.addEventListener('message', (event) => {
         labelToken += 1;
         void buildLabels(labelToken, labelPlacementKey(layers, layersBaseZoom, 1));
       }
+      break;
+    }
+    case 'exportSvg': {
+      const { id, project: exported, options } = message;
+      void (async () => {
+        try {
+          const registry = await currentRegistry();
+          const measurer = new TextMeasurer(registry);
+          const layout = computeLabelLayout(exported.layers, exported.baseZoom, 1, measurer);
+          scope.postMessage({ type: 'svg', id, svg: exportSVG(exported, layout, measurer, options) });
+        } catch (error) {
+          scope.postMessage({
+            type: 'exportError',
+            id,
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      })();
       break;
     }
     case 'clear': {

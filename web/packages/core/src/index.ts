@@ -185,3 +185,11 @@ export {
   type DocumentHistory,
   type EditOptions,
 } from './store/documentStore';
+export {
+  exportPixelSize,
+  exportProjection,
+  exportSVG,
+  fitHeightToArea,
+  type SvgExportOptions,
+} from './export/svg';
+export { fmt as formatSvgNumber, transformPathData } from './export/pathData';

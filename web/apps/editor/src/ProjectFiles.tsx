@@ -25,6 +25,7 @@ import {
   type LayerSnapshot,
   type MapColorScheme,
   type ProjectSnapshot,
+  type SvgExportOptions,
 } from '@nolli/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -37,8 +38,9 @@ import {
   saveFont,
   type FontEntry,
 } from './fontStore';
-import { MapCanvas } from './map/MapCanvas';
+import { MapCanvas, type SvgExporter } from './map/MapCanvas';
 import {
+  downloadFile,
   openProjectFile,
   saveProjectFile,
   type OpenedProjectFile,
@@ -47,6 +49,7 @@ import {
 import { summarizeProject } from './projectSummary';
 import type { ColorLibraryActions } from './style/ColorWell';
 import { LayersPanel } from './style/LayersPanel';
+import { ExportInspector } from './export/ExportInspector';
 import { StyleInspector } from './style/StyleInspector';
 import { TextSpike } from './TextSpike';
 
@@ -76,6 +79,8 @@ export function ProjectFiles() {
   const [labelFits, setLabelFits] = useState<Record<string, LayerLabelFit>>({});
   const cameraRef = useRef<CameraPose | null>(null);
   const [fontEntries, setFontEntries] = useState<FontEntry[]>([]);
+  const [phase, setPhase] = useState<'style' | 'export'>('style');
+  const exporterRef = useRef<SvgExporter | null>(null);
 
   const project = history?.present ?? null;
   const requests = useMemo<FontRequest[]>(
@@ -368,6 +373,20 @@ export function ProjectFiles() {
     [editProject],
   );
 
+  const exportSvg = useCallback(
+    async (options: SvgExportOptions) => {
+      const exporter = exporterRef.current;
+      if (!project || !exporter) throw new Error('The map is not ready yet.');
+      // Export what is on screen: the map's current rotation, as saving does.
+      const rotation = cameraRef.current?.rotation ?? project.artboardRotation;
+      const svg = await exporter({ ...project, artboardRotation: rotation }, options);
+      const base = (file?.name ?? 'Nolli map').replace(/\.[^.]*$/, '');
+      downloadFile(`${base}.svg`, svg, 'image/svg+xml');
+      setNotice({ kind: 'ok', text: `Exported ${base}.svg.` });
+    },
+    [project, file],
+  );
+
   const summary = useMemo(() => (project ? summarizeProject(project) : null), [project]);
   const canUndo = (history?.undoStack.length ?? 0) > 0;
   const canRedo = (history?.redoStack.length ?? 0) > 0;
@@ -455,13 +474,23 @@ export function ProjectFiles() {
             <button type="button" className="phase-tab" disabled title="Area phase (M6)">
               Area
             </button>
-            <button type="button" className="phase-tab active" aria-current="page">
+            <button
+              type="button"
+              className={`phase-tab${phase === 'style' ? ' active' : ''}`}
+              aria-current={phase === 'style' ? 'page' : undefined}
+              onClick={() => setPhase('style')}
+            >
               Style
             </button>
             <button type="button" className="phase-tab" disabled title="Signs phase (M8)">
               Signs
             </button>
-            <button type="button" className="phase-tab" disabled title="Export phase (M9)">
+            <button
+              type="button"
+              className={`phase-tab${phase === 'export' ? ' active' : ''}`}
+              aria-current={phase === 'export' ? 'page' : undefined}
+              onClick={() => setPhase('export')}
+            >
               Export
             </button>
           </nav>
@@ -534,6 +563,7 @@ export function ProjectFiles() {
             fonts={fontEntries}
             onCameraChange={handleCameraChange}
             onLabelFitsChange={setLabelFits}
+            exporterRef={exporterRef}
           />
           {showSpike && (
             <div className="spike-overlay" role="dialog" aria-label="Text-engine sample">
@@ -542,7 +572,10 @@ export function ProjectFiles() {
           )}
         </div>
 
-        {!panelsHidden && (
+        {!panelsHidden && phase === 'export' && (
+          <ExportInspector project={project} onExport={exportSvg} />
+        )}
+        {!panelsHidden && phase === 'style' && (
           <StyleInspector
             project={project}
             selectedLayerId={selectedLayerId}

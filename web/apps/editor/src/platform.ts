@@ -124,6 +124,17 @@ export async function openProjectFile(): Promise<OpenedProjectFile | null> {
   return openWithInput();
 }
 
+/** Offers `content` to the user as a file download, in the browser or the desktop app. */
+export function downloadFile(name: string, content: string, mimeType: string): void {
+  const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = name;
+  anchor.click();
+  // Some browsers cancel the download if the URL is revoked at once.
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
+
 function downloadProject(name: string, content: string): void {
   const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
   const anchor = document.createElement('a');

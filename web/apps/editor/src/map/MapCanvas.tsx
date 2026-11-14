@@ -14,8 +14,9 @@ import {
   type CameraPose,
   type LayerLabelFit,
   type ProjectSnapshot,
+  type SvgExportOptions,
 } from '@nolli/core';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import type { MainMessage, WorkerMessage } from './messages';
 import { compensateOverscan, surfaceMetrics } from './surface';
 
@@ -41,12 +42,16 @@ interface PointerPosition {
  * the finished bitmap back as the OffscreenCanvas itself. During a gesture the
  * bitmap is moved by a CSS matrix until the next frame arrives.
  */
+/** Writes an SVG of a project. It runs in the render worker, so the page stays responsive. */
+export type SvgExporter = (project: ProjectSnapshot, options: SvgExportOptions) => Promise<string>;
+
 export function MapCanvas({
   project,
   projectSession = 0,
   fonts = [],
   onCameraChange,
   onLabelFitsChange,
+  exporterRef,
 }: {
   project: ProjectSnapshot | null;
   /** Bumped when a new project file is opened, so style edits do not reset the camera. */
@@ -55,6 +60,8 @@ export function MapCanvas({
   fonts?: readonly { family: string; style: string; data: ArrayBuffer }[];
   onCameraChange?: (camera: CameraPose) => void;
   onLabelFitsChange?: (fits: Record<string, LayerLabelFit>) => void;
+  /** Filled with a function that exports an SVG through the map's worker. */
+  exporterRef?: MutableRefObject<SvgExporter | null>;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -73,6 +80,8 @@ export function MapCanvas({
   const epochRef = useRef(0);
   const onCameraChangeRef = useRef(onCameraChange);
   const onLabelFitsChangeRef = useRef(onLabelFitsChange);
+  const exportsRef = useRef(new Map<number, { resolve: (svg: string) => void; reject: (error: Error) => void }>());
+  const exportIdRef = useRef(0);
   const [status, setStatus] = useState<MapStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -176,6 +185,13 @@ export function MapCanvas({
       const message = event.data;
       if (message.type === 'ready') {
         readyRef.current();
+        return;
+      }
+      if (message.type === 'svg' || message.type === 'exportError') {
+        const pending = exportsRef.current.get(message.id);
+        exportsRef.current.delete(message.id);
+        if (message.type === 'svg') pending?.resolve(message.svg);
+        else pending?.reject(new Error(message.message));
         return;
       }
       if (message.type === 'error') {
@@ -471,6 +487,23 @@ export function MapCanvas({
     } satisfies MainMessage);
     requestDraw();
   }, [project, projectSession, requestDraw]);
+
+  useEffect(() => {
+    if (!exporterRef) return;
+    const pendingExports = exportsRef.current;
+    exporterRef.current = (exported, options) =>
+      new Promise<string>((resolve, reject) => {
+        exportIdRef.current += 1;
+        const id = exportIdRef.current;
+        pendingExports.set(id, { resolve, reject });
+        postRef.current({ type: 'exportSvg', id, project: exported, options } satisfies MainMessage);
+      });
+    return () => {
+      exporterRef.current = null;
+      for (const pending of pendingExports.values()) pending.reject(new Error('The map was closed.'));
+      pendingExports.clear();
+    };
+  }, [exporterRef]);
 
   // Send font files to the worker. Each send carries copies, so the page keeps its own bytes.
   useEffect(() => {
