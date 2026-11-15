@@ -1,13 +1,16 @@
 /* Nolli design tokens. Light values from nolli-redesign.pen.
-   Dark values are PROPOSED, not designed: review before shipping.
+   Dark values are PROPOSED, not designed: review before shipping. Both themes have been
+   adjusted from the design where needed to meet WCAG AA (see tokens.test.ts).
    Toggle with [data-theme="dark"] and/or prefers-color-scheme. */
 :root {
+  color-scheme: light;
   --nolli-accent: #2563eb;
+  --nolli-on-accent: #ffffff; /* text on an accent fill */
   --nolli-accent-soft: #eaf1ff;
   --nolli-warn-bg: #fff6e5;
   --nolli-warn-fg: #9a5b00;
   --nolli-ok: #16a34a;
-  --nolli-destructive: #e7000b;
+  --nolli-destructive: #dc000a; /* the designed #e7000b is 4.2:1 on a selected row */
 
   --nolli-chrome: #ededf0; /* titlebar */
   --nolli-panel: #ffffff;
@@ -15,8 +18,10 @@
   --nolli-border: #e5e5e5;
   --nolli-field: #f4f4f5;
   --nolli-text: #18181b;
-  --nolli-text-2: #71717a;
-  --nolli-text-3: #a1a1aa;
+  /* The designed greys (#71717a, #a1a1aa) fail WCAG AA for the small text they carry
+     (4.4:1 and 2.6:1 on the field and panel greys). These meet 4.5:1 on every surface. */
+  --nolli-text-2: #63636b;
+  --nolli-text-3: #6b6b75;
 
   --nolli-left-panel: 256px;
   --nolli-right-panel: 300px;
@@ -43,8 +48,11 @@
 }
 
 :root[data-theme="dark"] {
-  --nolli-accent: #5b8cff;
+  color-scheme: dark;
+  --nolli-accent: #6b97ff;
+  --nolli-on-accent: #0b0b0d; /* white on this blue is only 2.8:1 */
   --nolli-accent-soft: #1b2a4d;
+  --nolli-destructive: #ff6b6b;
   --nolli-warn-bg: #3a2a0a;
   --nolli-warn-fg: #f5c26b;
   --nolli-chrome: #111113;
@@ -54,5 +62,5 @@
   --nolli-field: #27272a;
   --nolli-text: #fafafa;
   --nolli-text-2: #a1a1aa;
-  --nolli-text-3: #71717a;
+  --nolli-text-3: #9696a6;
 }

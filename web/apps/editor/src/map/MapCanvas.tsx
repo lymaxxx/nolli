@@ -416,6 +416,48 @@ export function MapCanvas({
     host.addEventListener('wheel', onWheel, { passive: false });
     host.addEventListener('dblclick', onDoubleClick);
 
+    // Keyboard: the map can be moved, zoomed and turned without a mouse.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.target !== host || event.metaKey || event.ctrlKey || event.altKey) return;
+      const camera = cameraRef.current;
+      if (!camera) return;
+      const viewport = viewportRef.current;
+      const centre = { x: viewport.width / 2, y: viewport.height / 2 };
+      const step = event.shiftKey ? 20 : 80;
+      let next: CameraPose;
+      switch (event.key) {
+        // A key moves the view that way, so the map content moves the other way.
+        case 'ArrowLeft':
+          next = event.shiftKey ? rotateAround(camera, -5, centre, viewport) : panBy(camera, step, 0, viewport);
+          break;
+        case 'ArrowRight':
+          next = event.shiftKey ? rotateAround(camera, 5, centre, viewport) : panBy(camera, -step, 0, viewport);
+          break;
+        case 'ArrowUp':
+          next = panBy(camera, 0, step, viewport);
+          break;
+        case 'ArrowDown':
+          next = panBy(camera, 0, -step, viewport);
+          break;
+        case '+':
+        case '=':
+          next = zoomAround(camera, camera.zoom + 0.5, centre, viewport);
+          break;
+        case '-':
+        case '_':
+          next = zoomAround(camera, camera.zoom - 0.5, centre, viewport);
+          break;
+        case '0':
+          next = rotateBy(camera, -camera.rotation);
+          break;
+        default:
+          return;
+      }
+      event.preventDefault();
+      updateCamera(next);
+    };
+    host.addEventListener('keydown', onKeyDown);
+
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', applySurface);
@@ -426,6 +468,7 @@ export function MapCanvas({
       host.removeEventListener('lostpointercapture', endPointer);
       host.removeEventListener('wheel', onWheel);
       host.removeEventListener('dblclick', onDoubleClick);
+      host.removeEventListener('keydown', onKeyDown);
       worker.terminate();
       workerRef.current = null;
       canvas.remove();
@@ -543,7 +586,14 @@ export function MapCanvas({
 
   return (
     <div className="map-frame">
-      <div className="map-host" ref={hostRef} aria-label="Map" />
+      <div
+        className="map-host"
+        ref={hostRef}
+        role="region"
+        aria-label="Map"
+        aria-description="Arrow keys move the map, plus and minus zoom, shift with left or right arrow turns it, zero points north."
+        tabIndex={0}
+      />
       <div className="map-hud">
         {project && status ? (
           <>

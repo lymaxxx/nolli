@@ -133,7 +133,12 @@ function createWindow(): void {
   if (devURL) {
     void mainWindow.loadURL(devURL);
   } else {
-    void mainWindow.loadFile(path.join(__dirname, '../../editor/dist/index.html'));
+    // Packaged builds carry the editor beside the app (see `extraResources` in package.json);
+    // from a checkout it sits in the editor's build folder.
+    const page = app.isPackaged
+      ? path.join(process.resourcesPath, 'editor', 'index.html')
+      : path.join(__dirname, '../../editor/dist/index.html');
+    void mainWindow.loadFile(page);
   }
 }
 

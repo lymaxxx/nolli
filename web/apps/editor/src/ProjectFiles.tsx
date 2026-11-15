@@ -52,6 +52,7 @@ import { LayersPanel } from './style/LayersPanel';
 import { ExportInspector } from './export/ExportInspector';
 import { StyleInspector } from './style/StyleInspector';
 import { TextSpike } from './TextSpike';
+import { useTheme } from './theme';
 
 interface Notice {
   kind: 'ok' | 'error';
@@ -80,6 +81,7 @@ export function ProjectFiles() {
   const cameraRef = useRef<CameraPose | null>(null);
   const [fontEntries, setFontEntries] = useState<FontEntry[]>([]);
   const [phase, setPhase] = useState<'style' | 'export'>('style');
+  const { preference: themePreference, cycle: cycleTheme } = useTheme();
   const exporterRef = useRef<SvgExporter | null>(null);
 
   const project = history?.present ?? null;
@@ -401,7 +403,7 @@ export function ProjectFiles() {
             <span className="nolli-monogram" aria-hidden="true">
               N
             </span>
-            <span className="nolli-wordmark">Nolli</span>
+            <h1 className="nolli-wordmark">Nolli</h1>
           </div>
 
           <div className="project-tabs" role="tablist" aria-label="Open projects">
@@ -427,6 +429,15 @@ export function ProjectFiles() {
           <button
             type="button"
             className="link-button"
+            onClick={cycleTheme}
+            aria-label={`Theme: ${themePreference}. Change theme`}
+            title="Switch between the system, light and dark theme"
+          >
+            Theme: {themePreference === 'system' ? 'System' : themePreference === 'light' ? 'Light' : 'Dark'}
+          </button>
+          <button
+            type="button"
+            className="link-button"
             onClick={() => setShowSpike((current) => !current)}
           >
             {showSpike ? 'Hide' : 'Show'} text-engine sample
@@ -435,7 +446,7 @@ export function ProjectFiles() {
       </header>
 
       {/* Tier 2: Toolbar (52 px) */}
-      <div className="toolbar" role="toolbar" aria-label="Map toolbar">
+      <div className="toolbar" role="region" aria-label="Map toolbar">
         <div className="toolbar-zone toolbar-left">
           <button
             type="button"
