@@ -28,7 +28,8 @@
       "dist/**/*",
       "package.json",
       "!dist/**/*.map",
-      "!dist/**/*.test.js"
+      "!dist/**/*.test.js",
+      "!scripts"
     ],
     "extraResources": [
       {
@@ -101,6 +102,7 @@
     },
     "artifactName": "Nolli-${version}-${os}-${arch}.${ext}",
     "electronVersion": "45.3.2",
-    "publish": null
+    "publish": null,
+    "afterPack": "scripts/adhoc-sign.cjs"
   }
 }

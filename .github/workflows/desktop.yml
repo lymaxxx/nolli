@@ -1,0 +1,75 @@
+name: desktop
+
+# Builds the desktop app for macOS, Windows and Linux. Builds are NOT signed
+# with a developer identity: macOS gets an ad-hoc signature (see
+# web/apps/desktop/scripts/adhoc-sign.cjs) and Windows is unsigned. Download the
+# files from the run's Artifacts, or from the draft release a `v*` tag creates.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+    branches: ['claude/**']
+    paths: ['web/apps/desktop/**', 'web/apps/editor/**', 'web/packages/**', '.github/workflows/desktop.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            name: macos
+            args: --mac
+          - os: windows-latest
+            name: windows
+            args: --win
+          - os: ubuntu-latest
+            name: linux
+            args: --linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Package
+        working-directory: web/apps/desktop
+        run: npx electron-builder ${{ matrix.args }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nolli-${{ matrix.name }}
+          path: |
+            web/apps/desktop/release/*.zip
+            web/apps/desktop/release/*.dmg
+            web/apps/desktop/release/*.exe
+            web/apps/desktop/release/*.AppImage
+            web/apps/desktop/release/*.deb
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: files
+          merge-multiple: true
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" files/* --repo "$GITHUB_REPOSITORY" --draft --title "Nolli $GITHUB_REF_NAME" --notes "Unsigned builds. See web/apps/desktop/README.md for opening them."
