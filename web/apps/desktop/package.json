@@ -107,5 +107,6 @@
     "publish": null,
     "afterPack": "scripts/adhoc-sign.cjs"
   },
-  "desktopName": "nolli.desktop"
+  "desktopName": "nolli.desktop",
+  "homepage": "https://github.com/lymaxxx/nolli"
 }
