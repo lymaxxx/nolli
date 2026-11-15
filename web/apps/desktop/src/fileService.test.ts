@@ -45,8 +45,9 @@ describe('project filenames', () => {
       writePath: '/tmp/Map.nolli',
       suggestedPath: '/tmp/Map.nolli',
     });
+    // path.join uses the platform's separator, so the expectation does too (it is \tmp\Map.nolli on Windows).
     expect(saveTarget({ path: '/tmp/Map.mapcraft' })).toEqual({
-      suggestedPath: '/tmp/Map.nolli',
+      suggestedPath: path.join('/tmp', 'Map.nolli'),
     });
     expect(saveTarget({ suggestedName: 'Untitled.nolli' })).toEqual({
       suggestedPath: 'Untitled.nolli',

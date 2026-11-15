@@ -98,11 +98,14 @@
         "deb"
       ],
       "category": "Graphics",
-      "maintainer": "Nolli"
+      "maintainer": "Nolli",
+      "executableName": "nolli",
+      "syncDesktopName": true
     },
     "artifactName": "Nolli-${version}-${os}-${arch}.${ext}",
     "electronVersion": "45.3.2",
     "publish": null,
     "afterPack": "scripts/adhoc-sign.cjs"
-  }
+  },
+  "desktopName": "nolli.desktop"
 }
