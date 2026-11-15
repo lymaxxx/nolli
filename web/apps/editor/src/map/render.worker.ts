@@ -11,6 +11,8 @@ import {
   OSM_STANDARD,
   projectionOf,
   TextMeasurer,
+  toScreen,
+  type BoundingBox,
   type CameraPose,
   type LabelGeometry,
   type LayerLabelFit,
@@ -23,7 +25,7 @@ import { drawScene } from './drawScene';
 import { loadFallbackFonts } from './fonts';
 import { drawTiles } from './drawTiles';
 import type { MainMessage, WorkerMessage } from './messages';
-import { surfaceMetrics } from './surface';
+import { applyBaseTransform, surfaceMetrics } from './surface';
 import { TileLoader } from './tileStore';
 
 interface WorkerScope {
@@ -53,9 +55,35 @@ let source: RasterXYZSource = OSM_STANDARD;
 let showTiles = true;
 let tileOpacity = 1;
 let background: string | null = null;
+let areaOutline: BoundingBox | null = null;
 let redrawTimer: ReturnType<typeof setTimeout> | null = null;
 
 const loader = new TileLoader(source, () => scheduleRedraw());
+
+/** The project's area as a dashed red outline, which is how the macOS app shows it. */
+function drawAreaOutline(
+  context: OffscreenCanvasRenderingContext2D,
+  area: BoundingBox,
+  projection: ReturnType<typeof projectionOf>,
+  metrics: ReturnType<typeof surfaceMetrics>,
+): void {
+  const corners = [
+    toScreen(projection, area.maxLat, area.minLon),
+    toScreen(projection, area.maxLat, area.maxLon),
+    toScreen(projection, area.minLat, area.maxLon),
+    toScreen(projection, area.minLat, area.minLon),
+  ];
+  context.save();
+  applyBaseTransform(context, metrics);
+  context.beginPath();
+  corners.forEach((corner, i) => (i === 0 ? context.moveTo(corner.x, corner.y) : context.lineTo(corner.x, corner.y)));
+  context.closePath();
+  context.strokeStyle = '#d93a3a';
+  context.lineWidth = 2;
+  context.setLineDash([8, 6]);
+  context.stroke();
+  context.restore();
+}
 
 function drawNow(epoch: number | null): void {
   if (!ctx || !canvas || !camera || viewport.width <= 0 || viewport.height <= 0) return;
@@ -81,6 +109,7 @@ function drawNow(epoch: number | null): void {
     drawScene(ctx, scene, projection, metrics);
     drawLabels(ctx, labels, scene, projection, metrics);
   }
+  if (areaOutline) drawAreaOutline(ctx, areaOutline, projection, metrics);
 
   scope.postMessage({
     type: 'drawn',
@@ -230,6 +259,7 @@ scope.addEventListener('message', (event) => {
       showTiles = message.showTiles;
       tileOpacity = message.tileOpacity;
       background = message.background;
+      areaOutline = message.area;
       source = message.source;
       loader.setSource(source);
       scheduleRedraw();

@@ -26,6 +26,10 @@ const desktopApi = {
   ready: (): void => {
     ipcRenderer.send('project:renderer-ready');
   },
+  platform: process.platform,
+  setTitleBarTheme: (theme: 'light' | 'dark'): void => {
+    ipcRenderer.send('titlebar:theme', theme);
+  },
 };
 
 contextBridge.exposeInMainWorld('nolliDesktop', desktopApi);

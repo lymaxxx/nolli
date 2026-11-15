@@ -35,6 +35,10 @@ interface DesktopApi {
   saveProject(request: SaveRequest): Promise<{ path: string; name: string } | null>;
   onOpenProject(callback: (event: OpenEvent) => void): () => void;
   ready(): void;
+  /** The operating system the desktop app runs on (`darwin`, `win32` or `linux`). */
+  platform: string;
+  /** Matches the window's own buttons to the app theme (Windows and Linux). */
+  setTitleBarTheme(theme: 'light' | 'dark'): void;
 }
 
 declare global {

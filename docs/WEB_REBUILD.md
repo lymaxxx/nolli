@@ -165,7 +165,7 @@ Each one ends with something that can be opened and checked.
 | M3 | Camera, vector rendering, tiles, gestures | **Done.** The real 3,275-feature project drew over OpenStreetMap tiles at zoom 17. Wheel zoom, drag pan, Option-drag rotation, fit and reset-north were exercised in Electron, and tiles stayed aligned with vectors through rotation. Labels wait for M4 |
 | M4 | Label engine | **Done.** Placement matches the macOS `LabelLayoutEngine` dump within tolerance (`0.5 px` on the committed Noto Sans fixture; 188 of 191 road labels within `1 px` on the real 3,275-feature project) and renders in Electron |
 | M5 | Style phase | **Done.** Layers, Map and Layer inspectors, road type chips, per-field overrides, colour panel, schemes, text styles and undo/redo |
-| M6 | Area phase and data | Search, draw area, Overpass fetch, refresh that keeps manual edits |
+| M6 | Area phase and data | Search, draw area, Overpass fetch, refresh that keeps manual edits. **Built.** Checked in Chromium with the map services replaced by prepared answers (search, draw, fetch with a failing layer, refresh, save, reopen). Never run against the live Nominatim and Overpass servers |
 | M7 | Edit mode | Slide, pin, vertex edit, reset; reasons for dropped labels |
 | M8 | Signs phase | List, preview, placement, batch export |
 | M9 | Export phase | **SVG done** (Export tab, artboard size, Fit to area, outlined or live text). PDF and the Illustrator script are not started |

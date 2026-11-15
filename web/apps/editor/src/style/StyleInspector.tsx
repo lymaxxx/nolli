@@ -28,7 +28,7 @@ import {
   SliderNumberRow,
   SwitchToggle,
 } from './Controls';
-import { layerIconGlyph } from './LayersPanel';
+import { Icon, layerKindIcon } from './Icon';
 
 const COMMON_FONT_FAMILIES = [
   'Helvetica Neue',
@@ -123,7 +123,7 @@ export function StyleInspector({
       <aside className="right-panel" aria-label="Inspector">
         <header className="inspector-header">
           <span className="inspector-icon" aria-hidden="true">
-            🗺
+            <Icon name="map" size={18} />
           </span>
           <div>
             <h2>Map</h2>
@@ -433,7 +433,7 @@ export function StyleInspector({
     <aside className="right-panel" aria-label="Inspector">
       <header className="inspector-header">
         <span className="inspector-icon" aria-hidden="true">
-          {layerIconGlyph(selectedLayer.kind)}
+          <Icon name={layerKindIcon(selectedLayer.kind)} size={18} />
         </span>
         <div>
           <h2>{selectedLayer.name}</h2>
@@ -749,7 +749,7 @@ export function StyleInspector({
                     onEditLayer(selectedLayer.id, (layer) => resetManualEdits(layer))
                   }
                 >
-                  ↺ Reset to Layer Settings
+                  <Icon name="rotate-ccw" size={14} /> Reset to Layer Settings
                 </button>
               </CollapsibleSection>
             )}
@@ -780,7 +780,7 @@ export function StyleInspector({
                 {fit.placedNames < fit.totalNames ? (
                   <>
                     <strong>
-                      ⚠ {fit.placedNames} of {fit.totalNames} names fit on the map
+                      <Icon name="triangle-alert" size={14} /> {fit.placedNames} of {fit.totalNames} names fit on the map
                     </strong>
                     <span>Reduce the margin, or move this layer up.</span>
                   </>

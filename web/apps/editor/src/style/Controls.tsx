@@ -1,5 +1,6 @@
 import type { LabelStyle } from '@nolli/core';
 import { useState, type ReactNode } from 'react';
+import { Icon } from './Icon';
 
 export function CollapsibleSection({
   title,
@@ -23,7 +24,7 @@ export function CollapsibleSection({
           onClick={() => setOpen((current) => !current)}
         >
           <span className="section-chevron" aria-hidden="true">
-            {open ? '▾' : '▸'}
+            <Icon name={open ? 'chevron-down' : 'chevron-right'} size={14} />
           </span>
           <span className="section-title">{title}</span>
         </button>

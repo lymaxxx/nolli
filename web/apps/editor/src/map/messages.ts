@@ -1,4 +1,5 @@
 import type {
+  BoundingBox,
   CameraPose,
   ProjectSnapshot,
   SvgExportOptions,
@@ -17,6 +18,8 @@ export type MainMessage =
       showTiles: boolean;
       tileOpacity: number;
       background: string | null;
+      /** The area to outline on the map, or null for none. */
+      area: BoundingBox | null;
       source: RasterXYZSource;
     }
   | {

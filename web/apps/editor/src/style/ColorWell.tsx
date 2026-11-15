@@ -13,6 +13,7 @@ import {
 } from '@nolli/core';
 import { useEffect, useRef, useState } from 'react';
 import { NumberInput, PropRow, SegmentedControl } from './Controls';
+import { Icon } from './Icon';
 
 export interface ColorLibraryActions {
   swatches: readonly CodableColor[];
@@ -352,7 +353,7 @@ export function ColorWell({
                             aria-label={`Delete swatch #${colorToHex(swatch)}`}
                             onClick={() => library.onRemoveSwatch(index)}
                           >
-                            ×
+                            <Icon name="x" size={10} />
                           </button>
                         </div>
                       ))}
@@ -414,7 +415,7 @@ export function ColorWell({
                             aria-label={`Delete ${scheme.name}`}
                             onClick={() => library.onDeleteScheme(scheme.id)}
                           >
-                            ×
+                            <Icon name="x" size={10} />
                           </button>
                         </li>
                       ))}

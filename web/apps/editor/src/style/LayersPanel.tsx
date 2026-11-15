@@ -12,6 +12,7 @@ import {
 import { useState } from 'react';
 import { FontPanel } from '../FontPanel';
 import type { FontEntry } from '../fontStore';
+import { Icon, layerKindIcon } from './Icon';
 
 const ALL_LAYER_KINDS: readonly LayerKind[] = [
   'roads',
@@ -30,41 +31,6 @@ const ALL_LAYER_KINDS: readonly LayerKind[] = [
   'education',
   'background',
 ];
-
-export function layerIconGlyph(kind: LayerKind): string {
-  switch (kind) {
-    case 'roads':
-      return '⛕';
-    case 'parks':
-      return '♣';
-    case 'water':
-      return '💧';
-    case 'buildings':
-      return '⌂';
-    case 'pedestrian_zones':
-      return '⚇';
-    case 'plazas':
-      return '◻';
-    case 'landmarks':
-      return '⌖';
-    case 'transport':
-      return '🚊';
-    case 'dining':
-      return 'Ψ';
-    case 'accommodation':
-      return '⌂';
-    case 'healthcare':
-      return '✚';
-    case 'parking':
-      return 'P';
-    case 'shopping':
-      return '🛍';
-    case 'education':
-      return '🎓';
-    case 'background':
-      return '▢';
-  }
-}
 
 function featureTotal(layer: LayerSnapshot): number {
   return (
@@ -165,7 +131,7 @@ export function LayersPanel({
               }}
             >
               <span className="layer-icon" aria-hidden="true">
-                🗺
+                <Icon name="map" size={16} />
               </span>
               <span className="layer-name">Map</span>
               <span className="layer-count">Z {project.baseZoom}</span>
@@ -225,7 +191,7 @@ export function LayersPanel({
                     }}
                   >
                     <span className="layer-icon" aria-hidden="true">
-                      {layerIconGlyph(layer.kind)}
+                      <Icon name={layerKindIcon(layer.kind)} size={16} />
                     </span>
 
                     {editingId === layer.id ? (
@@ -264,7 +230,7 @@ export function LayersPanel({
                         title={`${fit.placedNames} of ${fit.totalNames} names fit on the map`}
                         aria-label={`${fit.placedNames} of ${fit.totalNames} names fit`}
                       >
-                        ⚠
+                        <Icon name="triangle-alert" size={14} />
                       </span>
                     )}
 
@@ -278,7 +244,7 @@ export function LayersPanel({
                         aria-label={layer.isVisible ? `Hide ${layer.name}` : `Show ${layer.name}`}
                         onClick={() => onToggleLayerVisible(layer.id)}
                       >
-                        {layer.isVisible ? '👁' : '🚫'}
+                        <Icon name={layer.isVisible ? 'eye' : 'eye-off'} size={14} />
                       </button>
                       {index > 0 && (
                         <button
@@ -288,7 +254,7 @@ export function LayersPanel({
                           aria-label={`Move ${layer.name} up`}
                           onClick={() => onMoveLayer(index, index - 1)}
                         >
-                          ↑
+                          <Icon name="arrow-up" size={14} />
                         </button>
                       )}
                       <button
@@ -298,7 +264,7 @@ export function LayersPanel({
                         aria-label={`Delete ${layer.name}`}
                         onClick={() => onRemoveLayer(layer.id)}
                       >
-                        ×
+                        <Icon name="x" size={14} />
                       </button>
                     </div>
                   </li>
@@ -308,7 +274,9 @@ export function LayersPanel({
           </div>
 
           <div className="layers-footer">
-            <p className="reorder-hint">⋮⋮ Drag to reorder · top draws on top</p>
+            <p className="reorder-hint">
+              <Icon name="grip-vertical" size={12} /> Drag to reorder · top draws on top
+            </p>
             <div className="add-layer-wrap">
               <button
                 type="button"
@@ -331,7 +299,9 @@ export function LayersPanel({
                         setShowAddMenu(false);
                       }}
                     >
-                      <span>{layerIconGlyph(kind)}</span>
+                      <span aria-hidden="true">
+                        <Icon name={layerKindIcon(kind)} size={16} />
+                      </span>
                       <span>{LAYER_KIND_META[kind].displayName}</span>
                     </button>
                   ))}
@@ -371,7 +341,7 @@ export function LayersPanel({
                       aria-label={`Delete text style ${ts.name}`}
                       onClick={() => onDeleteTextStyle(ts.id)}
                     >
-                      ×
+                      <Icon name="x" size={14} />
                     </button>
                   </li>
                 ))}
@@ -426,7 +396,7 @@ export function LayersPanel({
                       aria-label={`Delete scheme ${scheme.name}`}
                       onClick={() => onDeleteScheme(scheme.id)}
                     >
-                      ×
+                      <Icon name="x" size={14} />
                     </button>
                   </li>
                 ))}

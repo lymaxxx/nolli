@@ -1,6 +1,7 @@
 import { exportPixelSize, fitHeightToArea, type ProjectSnapshot, type SvgExportOptions } from '@nolli/core';
 import { useState } from 'react';
 import { CollapsibleSection, NumberInput, PropRow, SegmentedControl, SwitchToggle } from '../style/Controls';
+import { Icon } from '../style/Icon';
 
 interface Props {
   project: ProjectSnapshot | null;
@@ -42,7 +43,7 @@ export function ExportInspector({ project, onExport }: Props) {
     <aside className="right-panel" aria-label="Export">
       <header className="inspector-header">
         <span className="inspector-icon" aria-hidden="true">
-          ⇪
+          <Icon name="share" size={18} />
         </span>
         <div>
           <h2>Export</h2>

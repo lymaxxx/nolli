@@ -2,20 +2,26 @@ import {
   addProjectLayer,
   applyColorScheme,
   applyDocumentEdit,
+  applyFetchedLayer,
   applyTextStyleToLabel,
   captureColorScheme,
   captureTextStyleFromLabel,
   createDocumentHistory,
+  createEmptyProject,
+  fetchLayerData,
   fontsUsed,
+  hasManualEdits,
   loadProject,
   markDocumentSaved,
   moveProjectLayer,
   redoDocument,
   removeProjectLayer,
   serializeProject,
+  setProjectArea,
   syncSubLabelStyles,
   undoDocument,
   updateProjectLayer,
+  type BoundingBox,
   type CameraPose,
   type CodableColor,
   type DocumentHistory,
@@ -38,7 +44,8 @@ import {
   saveFont,
   type FontEntry,
 } from './fontStore';
-import { MapCanvas, type SvgExporter } from './map/MapCanvas';
+import { AreaInspector, IDLE_PROGRESS, type FetchProgress } from './area/AreaInspector';
+import { MapCanvas, type MapApi, type SvgExporter } from './map/MapCanvas';
 import {
   downloadFile,
   openProjectFile,
@@ -50,6 +57,7 @@ import { summarizeProject } from './projectSummary';
 import type { ColorLibraryActions } from './style/ColorWell';
 import { LayersPanel } from './style/LayersPanel';
 import { ExportInspector } from './export/ExportInspector';
+import { Icon } from './style/Icon';
 import { StyleInspector } from './style/StyleInspector';
 import { TextSpike } from './TextSpike';
 import { useTheme } from './theme';
@@ -80,7 +88,10 @@ export function ProjectFiles() {
   const [labelFits, setLabelFits] = useState<Record<string, LayerLabelFit>>({});
   const cameraRef = useRef<CameraPose | null>(null);
   const [fontEntries, setFontEntries] = useState<FontEntry[]>([]);
-  const [phase, setPhase] = useState<'style' | 'export'>('style');
+  const [phase, setPhase] = useState<'area' | 'style' | 'export'>('style');
+  const [fetchProgress, setFetchProgress] = useState<FetchProgress>(IDLE_PROGRESS);
+  const fetchAbortRef = useRef<AbortController | null>(null);
+  const mapApiRef = useRef<MapApi | null>(null);
   const { preference: themePreference, cycle: cycleTheme } = useTheme();
   const exporterRef = useRef<SvgExporter | null>(null);
 
@@ -222,6 +233,103 @@ export function ProjectFiles() {
   const handleRedo = useCallback(() => {
     setHistory((current) => (current ? redoDocument(current) : current));
   }, []);
+
+  /** Closes the open project, asking first if it has changes that were not saved. */
+  const closeProject = useCallback(() => {
+    if (history?.isDirty && !window.confirm('This project has unsaved changes. Close it anyway?')) return;
+    setHistory(null);
+    setFile(undefined);
+    setSelectedLayerId(null);
+    setLabelFits({});
+    setLiveCamera(null);
+    cameraRef.current = null;
+    setProjectSession((session) => session + 1);
+  }, [history?.isDirty]);
+
+  /** Starts a project with no layers and no area, looking at what the map shows now. */
+  const newProject = useCallback(() => {
+    if (history?.isDirty && !window.confirm('This project has unsaved changes. Start a new one anyway?')) return;
+    const camera = cameraRef.current;
+    const nextHistory = createDocumentHistory(
+      createEmptyProject(
+        camera ? { lat: camera.centerLat, lon: camera.centerLon, zoom: camera.zoom } : undefined,
+      ),
+    );
+    cameraRef.current = null;
+    setLiveCamera(null);
+    setLabelFits({});
+    setHistory(nextHistory);
+    setProjectSession((session) => session + 1);
+    setSelectedLayerId(null);
+    setFile({ name: 'Untitled.nolli' });
+    setFetchProgress(IDLE_PROGRESS);
+    setPhase('area');
+  }, [history?.isDirty]);
+
+  const setArea = useCallback(
+    (area: BoundingBox, viewZoom: number) => {
+      editProject((p) => setProjectArea(p, area, viewZoom));
+    },
+    [editProject],
+  );
+
+  const cancelFetch = useCallback(() => fetchAbortRef.current?.abort(), []);
+
+  /** Downloads the chosen layers one at a time, so a slow or failing one does not hold up the rest. */
+  const startFetch = useCallback(
+    async (kinds: LayerKind[]) => {
+      const area = project?.boundingBox;
+      if (!project || !area || kinds.length === 0) return;
+      if (
+        project.layers.some(hasManualEdits) &&
+        !window.confirm('Downloading again replaces the layers it fetches, and any hand edits on them. Continue?')
+      ) {
+        return;
+      }
+      const wasEmpty = project.layers.length === 0;
+      const endpoint = project.settings.overpassEndpoint;
+      const controller = new AbortController();
+      fetchAbortRef.current = controller;
+      const errors: FetchProgress['errors'] = {};
+      setFetchProgress({ ...IDLE_PROGRESS, running: true, total: kinds.length });
+
+      for (const [index, kind] of kinds.entries()) {
+        if (controller.signal.aborted) break;
+        setFetchProgress((current) => ({ ...current, current: kind, done: index, errors: { ...errors } }));
+        try {
+          const data =
+            kind === 'background'
+              ? null
+              : await fetchLayerData(kind, area, {
+                  endpoint,
+                  signal: controller.signal,
+                  fetchImpl: (url, init) => fetch(url, init as RequestInit),
+                });
+          editProject((p) => applyFetchedLayer(p, kind, data, area));
+        } catch (error) {
+          if (controller.signal.aborted) break;
+          errors[kind] = error instanceof Error ? error.message : String(error);
+        }
+      }
+
+      const cancelled = controller.signal.aborted;
+      fetchAbortRef.current = null;
+      setFetchProgress({
+        running: false,
+        done: kinds.length,
+        total: kinds.length,
+        errors,
+        finished: true,
+        cancelled,
+      });
+      // The first successful download of a new project goes straight to designing it.
+      if (wasEmpty && !cancelled && Object.keys(errors).length < kinds.length) {
+        setPhase('style');
+        setSelectedLayerId((current) => current ?? null);
+      }
+    },
+    [editProject, project],
+  );
 
   const openProject = useCallback(async () => {
     setBusy(true);
@@ -413,6 +521,7 @@ export function ProjectFiles() {
               className="project-tab active"
               title={file?.path ?? file?.name ?? 'Untitled project'}
             >
+              <Icon name="map" size={14} />
               <span className="project-tab-name">{file?.name ?? 'No project open'}</span>
               {project && (
                 <span
@@ -421,23 +530,43 @@ export function ProjectFiles() {
                   data-testid="project-status-dot"
                 />
               )}
+              {project && (
+                <button
+                  type="button"
+                  className="tab-close"
+                  aria-label="Close project"
+                  title="Close project"
+                  onClick={closeProject}
+                >
+                  <Icon name="x" size={12} />
+                </button>
+              )}
             </div>
           </div>
+          <button
+            type="button"
+            className="tab-add"
+            aria-label="New project"
+            title="New project"
+            onClick={newProject}
+          >
+            <Icon name="plus" size={14} />
+          </button>
         </div>
 
         <div className="titlebar-right">
           <button
             type="button"
-            className="link-button"
+            className="toolbar-icon-btn titlebar-btn"
             onClick={cycleTheme}
             aria-label={`Theme: ${themePreference}. Change theme`}
-            title="Switch between the system, light and dark theme"
+            title={`Theme: ${themePreference === 'system' ? 'follows the system' : themePreference}. Click to change`}
           >
-            Theme: {themePreference === 'system' ? 'System' : themePreference === 'light' ? 'Light' : 'Dark'}
+            <Icon name={themePreference === 'system' ? 'monitor' : themePreference === 'light' ? 'sun' : 'moon'} size={16} />
           </button>
           <button
             type="button"
-            className="link-button"
+            className="link-button titlebar-btn"
             onClick={() => setShowSpike((current) => !current)}
           >
             {showSpike ? 'Hide' : 'Show'} text-engine sample
@@ -456,7 +585,7 @@ export function ProjectFiles() {
             title={panelsHidden ? 'Show side panels' : 'Hide side panels'}
             onClick={() => setPanelsHidden((current) => !current)}
           >
-            ◫
+            <Icon name="panel-left" size={16} />
           </button>
           <button
             type="button"
@@ -466,7 +595,7 @@ export function ProjectFiles() {
             title="Undo (⌘Z)"
             onClick={handleUndo}
           >
-            ↶
+            <Icon name="undo-2" size={16} />
           </button>
           <button
             type="button"
@@ -476,33 +605,41 @@ export function ProjectFiles() {
             title="Redo (⌘⇧Z)"
             onClick={handleRedo}
           >
-            ↷
+            <Icon name="redo-2" size={16} />
           </button>
         </div>
 
         <div className="toolbar-zone toolbar-center">
           <nav className="phase-tabs" aria-label="Workflow phases">
-            <button type="button" className="phase-tab" disabled title="Area phase (M6)">
-              Area
+            <button
+              type="button"
+              className={`phase-tab${phase === 'area' ? ' active' : ''}`}
+              aria-current={phase === 'area' ? 'page' : undefined}
+              disabled={!project}
+              onClick={() => setPhase('area')}
+            >
+              <Icon name="square-dashed" size={14} /> Area
             </button>
             <button
               type="button"
               className={`phase-tab${phase === 'style' ? ' active' : ''}`}
               aria-current={phase === 'style' ? 'page' : undefined}
+              disabled={!project}
               onClick={() => setPhase('style')}
             >
-              Style
+              <Icon name="sliders-horizontal" size={14} /> Style
             </button>
             <button type="button" className="phase-tab" disabled title="Signs phase (M8)">
-              Signs
+              <Icon name="signpost" size={14} /> Signs
             </button>
             <button
               type="button"
               className={`phase-tab${phase === 'export' ? ' active' : ''}`}
               aria-current={phase === 'export' ? 'page' : undefined}
+              disabled={!project}
               onClick={() => setPhase('export')}
             >
-              Export
+              <Icon name="share" size={14} /> Export
             </button>
           </nav>
         </div>
@@ -514,14 +651,14 @@ export function ProjectFiles() {
             onClick={() => void openProject()}
             disabled={busy}
           >
-            Open project…
+            <Icon name="folder-open" size={14} /> Open project…
           </button>
           <button
             type="button"
             onClick={() => void saveProject()}
             disabled={busy || !project}
           >
-            Save as .nolli
+            <Icon name="save" size={14} /> Save as .nolli
           </button>
         </div>
       </div>
@@ -575,7 +712,23 @@ export function ProjectFiles() {
             onCameraChange={handleCameraChange}
             onLabelFitsChange={setLabelFits}
             exporterRef={exporterRef}
+            mapApiRef={mapApiRef}
+            showArea={phase === 'area'}
           />
+          {!project && (
+            <div className="empty-state" role="region" aria-label="Get started">
+              <h2>Start a map</h2>
+              <p>Make a new project and download an area, or open one you saved.</p>
+              <div className="empty-actions">
+                <button type="button" className="primary" onClick={newProject}>
+                  <Icon name="plus" size={14} /> New project
+                </button>
+                <button type="button" onClick={() => void openProject()}>
+                  <Icon name="folder-open" size={14} /> Open project…
+                </button>
+              </div>
+            </div>
+          )}
           {showSpike && (
             <div className="spike-overlay" role="dialog" aria-label="Text-engine sample">
               <TextSpike />
@@ -583,6 +736,16 @@ export function ProjectFiles() {
           )}
         </div>
 
+        {!panelsHidden && phase === 'area' && (
+          <AreaInspector
+            project={project}
+            mapApiRef={mapApiRef}
+            progress={fetchProgress}
+            onSetArea={setArea}
+            onFetch={(kinds) => void startFetch(kinds)}
+            onCancel={cancelFetch}
+          />
+        )}
         {!panelsHidden && phase === 'export' && (
           <ExportInspector project={project} onExport={exportSvg} />
         )}

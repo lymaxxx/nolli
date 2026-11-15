@@ -1,4 +1,5 @@
 import type { LayerKind } from '@nolli/core';
+import { FolderOpen, Monitor, Moon, RotateCcw, Save, Sun, Upload, type LucideIcon } from 'lucide-react';
 
 export type IconName =
   | 'chevron-down'
@@ -45,7 +46,25 @@ export type IconName =
   | 'triangle-alert'
   | 'eye'
   | 'eye-off'
-  | 'arrow-up';
+  | 'arrow-up'
+  | 'sun'
+  | 'moon'
+  | 'monitor'
+  | 'folder-open'
+  | 'save'
+  | 'upload'
+  | 'rotate-ccw';
+
+/** Icons drawn by the Lucide package; the rest of the set is drawn by hand below. */
+const LUCIDE: Partial<Record<IconName, LucideIcon>> = {
+  sun: Sun,
+  moon: Moon,
+  monitor: Monitor,
+  'folder-open': FolderOpen,
+  save: Save,
+  upload: Upload,
+  'rotate-ccw': RotateCcw,
+};
 
 export function layerKindIcon(kind: LayerKind): IconName {
   switch (kind) {
@@ -91,6 +110,8 @@ export function Icon({
   size?: number;
   className?: string;
 }) {
+  const Lucide = LUCIDE[name];
+  if (Lucide) return <Lucide size={size} strokeWidth={2} className={className} aria-hidden="true" />;
   return (
     <svg
       width={size}

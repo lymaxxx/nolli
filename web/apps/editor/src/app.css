@@ -215,7 +215,7 @@ select {
 
 /* Shared button styles ---------------------------------------------------- */
 
-.app-shell button:not(.toolbar-icon-btn):not(.phase-tab):not(.panel-tab):not(.inspector-tab):not(.road-chip):not(.segment-btn):not(.switch-toggle):not(.override-dot-btn):not(.color-swatch-btn):not(.swatch-btn):not(.swatch-del):not(.anchor-cell):not(.section-toggle):not(.layer-action-btn) {
+.app-shell button:not(.toolbar-icon-btn):not(.tab-close):not(.tab-add):not(.phase-tab):not(.panel-tab):not(.inspector-tab):not(.road-chip):not(.segment-btn):not(.switch-toggle):not(.override-dot-btn):not(.color-swatch-btn):not(.swatch-btn):not(.swatch-del):not(.anchor-cell):not(.section-toggle):not(.layer-action-btn) {
   height: var(--nolli-control-h);
   padding: 0 10px;
   border: 1px solid var(--nolli-border);
@@ -1548,4 +1548,205 @@ select {
 .number-field:focus-within {
   outline: 2px solid var(--nolli-accent);
   outline-offset: 1px;
+}
+
+/* Icons sit beside their labels. */
+.phase-tab,
+.app-shell button.primary,
+.toolbar-right button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.project-tab {
+  position: relative;
+}
+
+.tab-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--nolli-text-2);
+  cursor: pointer;
+}
+
+.tab-close:hover {
+  background: var(--nolli-field);
+  color: var(--nolli-text);
+}
+
+/* The title bar doubles as the window's drag handle in the desktop app. */
+.titlebar {
+  -webkit-app-region: drag;
+}
+
+.titlebar button,
+.titlebar .project-tab,
+.titlebar a {
+  -webkit-app-region: no-drag;
+}
+
+/* macOS draws its window buttons over the left of the title bar; keep clear of them. */
+:root[data-platform='darwin'] .titlebar {
+  padding-left: 84px;
+}
+
+/* Windows and Linux draw theirs over the right; keep clear of those instead. */
+:root[data-platform='win32'] .titlebar,
+:root[data-platform='linux'] .titlebar {
+  padding-right: 150px;
+}
+
+/* Drawing an area on the map. */
+.map-host.drawing {
+  cursor: crosshair;
+}
+
+.draw-rect {
+  position: absolute;
+  pointer-events: none;
+  border: 2px dashed #d93a3a;
+  background: rgb(217 58 58 / 10%);
+}
+
+/* Area phase ---------------------------------------------------------------- */
+
+.area-search {
+  display: flex;
+  gap: 6px;
+}
+
+.area-search input {
+  flex: 1;
+  min-width: 0;
+  height: var(--nolli-control-h);
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--nolli-radius-control);
+  background: var(--nolli-field);
+  color: var(--nolli-text);
+  font: inherit;
+}
+
+.area-results,
+.area-layers,
+.area-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.area-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  height: auto !important;
+  padding: 6px 8px !important;
+  text-align: left;
+}
+
+.area-result span {
+  color: var(--nolli-text-2);
+  font-size: var(--nolli-fs-caption);
+}
+
+.area-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.area-layers label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.area-layers .layer-count {
+  margin-left: auto;
+}
+
+.area-errors {
+  color: var(--nolli-warn-fg);
+  font-size: var(--nolli-fs-caption);
+}
+
+.progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--nolli-field);
+  overflow: hidden;
+}
+
+.progress > div {
+  height: 100%;
+  background: var(--nolli-accent);
+  transition: width 0.2s;
+}
+
+.tab-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--nolli-text-2);
+  cursor: pointer;
+}
+
+.tab-add:hover {
+  background: var(--nolli-field);
+  color: var(--nolli-text);
+}
+
+/* What the map area shows before any project is open. */
+.empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 340px;
+  padding: 24px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--nolli-border);
+  border-radius: var(--nolli-radius-card);
+  background: var(--nolli-panel);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 20%);
+  text-align: center;
+}
+
+.empty-state h2 {
+  margin: 0;
+  font-size: var(--nolli-fs-title);
+}
+
+.empty-state p {
+  margin: 0;
+  color: var(--nolli-text-2);
+}
+
+.empty-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }

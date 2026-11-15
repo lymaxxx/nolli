@@ -193,3 +193,23 @@ export {
   type SvgExportOptions,
 } from './export/svg';
 export { fmt as formatSvgNumber, transformPathData } from './export/pathData';
+export {
+  assembleRings,
+  buildOverpassQuery,
+  fetchLayerData,
+  parseOverpass,
+  requiresFetch,
+  type AbortSignalLike,
+  type FetchOptions,
+  type FetchResult,
+  type HttpFetch,
+  type HttpResponse,
+} from './data/overpass';
+export { parseGeocode, searchPlaces, type GeocodeResult, type SearchOptions } from './data/geocode';
+export {
+  applyFetchedLayer,
+  createEmptyProject,
+  FETCH_KINDS,
+  setProjectArea,
+  type InitialView,
+} from './project/newProject';

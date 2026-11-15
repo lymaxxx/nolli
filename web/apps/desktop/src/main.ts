@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, session } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, session } from 'electron';
 import path from 'node:path';
 import {
   ensureNolliExtension,
@@ -92,13 +92,29 @@ function registerIpc(): void {
     return writeProjectFile(writePath, request.content);
   });
 
+  // The page tells us its theme so the window buttons Windows and Linux draw match it.
+  ipcMain.on('titlebar:theme', (_event, theme: unknown) => {
+    if (process.platform === 'darwin' || !mainWindow) return;
+    if (theme !== 'light' && theme !== 'dark') return;
+    mainWindow.setTitleBarOverlay({ ...TITLEBAR_OVERLAY[theme], height: TITLEBAR_HEIGHT });
+  });
+
   ipcMain.on('project:renderer-ready', () => {
     rendererReady = true;
     if (pendingOpenPath) void deliverOpenPath(pendingOpenPath);
   });
 }
 
+const TITLEBAR_HEIGHT = 40;
+
+/** Colours for the window buttons Windows and Linux draw over the title bar. */
+const TITLEBAR_OVERLAY = {
+  light: { color: '#ededf0', symbolColor: '#18181b' },
+  dark: { color: '#111113', symbolColor: '#fafafa' },
+} as const;
+
 function createWindow(): void {
+  const isMac = process.platform === 'darwin';
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 820,
@@ -106,6 +122,17 @@ function createWindow(): void {
     minHeight: 560,
     backgroundColor: '#ededf0',
     show: false,
+    // The app draws its own title bar (see the redesign), so the system one is hidden and its
+    // window buttons are placed inside ours: inset on macOS, overlaid on Windows and Linux.
+    titleBarStyle: 'hidden',
+    ...(isMac
+      ? { trafficLightPosition: { x: 16, y: (TITLEBAR_HEIGHT - 12) / 2 } }
+      : {
+          titleBarOverlay: {
+            ...TITLEBAR_OVERLAY[nativeTheme.shouldUseDarkColors ? 'dark' : 'light'],
+            height: TITLEBAR_HEIGHT,
+          },
+        }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

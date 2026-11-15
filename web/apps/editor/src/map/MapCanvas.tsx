@@ -1,5 +1,6 @@
 import {
   cameraForProject,
+  fromScreen,
   cssColor,
   fitBounds,
   OSM_STANDARD,
@@ -11,6 +12,7 @@ import {
   sameCamera,
   toCssMatrix,
   zoomAround,
+  type BoundingBox,
   type CameraPose,
   type LayerLabelFit,
   type ProjectSnapshot,
@@ -19,6 +21,7 @@ import {
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import type { MainMessage, WorkerMessage } from './messages';
 import { compensateOverscan, surfaceMetrics } from './surface';
+import { Icon } from '../style/Icon';
 
 interface MapStatus {
   zoom: number;
@@ -42,6 +45,16 @@ interface PointerPosition {
  * the finished bitmap back as the OffscreenCanvas itself. During a gesture the
  * bitmap is moved by a CSS matrix until the next frame arrives.
  */
+/** What the rest of the app can ask of the map. */
+export interface MapApi {
+  /** Frames a place: an area to fit, or a point to centre on at a zoom. */
+  flyTo(target: BoundingBox | { lat: number; lon: number; zoom: number }): void;
+  /** The area the view shows now, or null before the map is ready. */
+  viewBounds(): { area: BoundingBox; zoom: number } | null;
+  /** Lets the user drag a rectangle on the map. Resolves with it, or null if they cancel. */
+  drawArea(): Promise<BoundingBox | null>;
+}
+
 /** Writes an SVG of a project. It runs in the render worker, so the page stays responsive. */
 export type SvgExporter = (project: ProjectSnapshot, options: SvgExportOptions) => Promise<string>;
 
@@ -52,6 +65,8 @@ export function MapCanvas({
   onCameraChange,
   onLabelFitsChange,
   exporterRef,
+  mapApiRef,
+  showArea = false,
 }: {
   project: ProjectSnapshot | null;
   /** Bumped when a new project file is opened, so style edits do not reset the camera. */
@@ -62,6 +77,10 @@ export function MapCanvas({
   onLabelFitsChange?: (fits: Record<string, LayerLabelFit>) => void;
   /** Filled with a function that exports an SVG through the map's worker. */
   exporterRef?: MutableRefObject<SvgExporter | null>;
+  /** Filled with the map's controls for the rest of the app. */
+  mapApiRef?: MutableRefObject<MapApi | null>;
+  /** Outline the project's area on the map. */
+  showArea?: boolean;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -80,6 +99,9 @@ export function MapCanvas({
   const epochRef = useRef(0);
   const onCameraChangeRef = useRef(onCameraChange);
   const onLabelFitsChangeRef = useRef(onLabelFitsChange);
+  const cancelDrawRef = useRef<() => void>(() => {});
+  const drawModeRef = useRef<{ resolve: (area: BoundingBox | null) => void } | null>(null);
+  const [drawRect, setDrawRect] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const exportsRef = useRef(new Map<number, { resolve: (svg: string) => void; reject: (error: Error) => void }>());
   const exportIdRef = useRef(0);
   const [status, setStatus] = useState<MapStatus | null>(null);
@@ -299,9 +321,41 @@ export function MapCanvas({
       };
     };
 
+    // Drawing an area: a drag makes a rectangle instead of moving the map.
+    let drawStart: PointerPosition | null = null;
+    const finishDraw = (area: BoundingBox | null) => {
+      const pending = drawModeRef.current;
+      drawModeRef.current = null;
+      drawStart = null;
+      setDrawRect(null);
+      host.classList.remove('drawing');
+      pending?.resolve(area);
+    };
+    const boundsOfRect = (a: PointerPosition, b: PointerPosition): BoundingBox | null => {
+      const camera = cameraRef.current;
+      if (!camera || Math.abs(a.x - b.x) < 8 || Math.abs(a.y - b.y) < 8) return null;
+      const projection = projectionOf(camera, viewportRef.current);
+      const corners = [
+        fromScreen(projection, a.x, a.y),
+        fromScreen(projection, b.x, a.y),
+        fromScreen(projection, b.x, b.y),
+        fromScreen(projection, a.x, b.y),
+      ];
+      const lats = corners.map((corner) => corner.lat);
+      const lons = corners.map((corner) => corner.lon);
+      return { minLat: Math.min(...lats), minLon: Math.min(...lons), maxLat: Math.max(...lats), maxLon: Math.max(...lons) };
+    };
+
     const onPointerDown = (event: PointerEvent) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       const point = localPoint(event);
+      if (drawModeRef.current) {
+        drawStart = point;
+        host.setPointerCapture(event.pointerId);
+        setDrawRect({ x0: point.x, y0: point.y, x1: point.x, y1: point.y });
+        event.preventDefault();
+        return;
+      }
       pointers.set(event.pointerId, point);
       host.setPointerCapture(event.pointerId);
       host.classList.add('dragging');
@@ -319,6 +373,12 @@ export function MapCanvas({
     };
 
     const onPointerMove = (event: PointerEvent) => {
+      if (drawModeRef.current && drawStart) {
+        const point = localPoint(event);
+        setDrawRect({ x0: drawStart.x, y0: drawStart.y, x1: point.x, y1: point.y });
+        event.preventDefault();
+        return;
+      }
       if (!pointers.has(event.pointerId)) return;
       const point = localPoint(event);
       pointers.set(event.pointerId, point);
@@ -365,6 +425,10 @@ export function MapCanvas({
     };
 
     const endPointer = (event: PointerEvent) => {
+      if (drawModeRef.current && drawStart) {
+        finishDraw(boundsOfRect(drawStart, localPoint(event)));
+        return;
+      }
       pointers.delete(event.pointerId);
       pinch = null;
 
@@ -457,6 +521,11 @@ export function MapCanvas({
       updateCamera(next);
     };
     host.addEventListener('keydown', onKeyDown);
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && drawModeRef.current) finishDraw(null);
+    };
+    window.addEventListener('keydown', onEscape);
+    cancelDrawRef.current = () => finishDraw(null);
 
     return () => {
       observer.disconnect();
@@ -469,6 +538,8 @@ export function MapCanvas({
       host.removeEventListener('wheel', onWheel);
       host.removeEventListener('dblclick', onDoubleClick);
       host.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keydown', onEscape);
+      cancelDrawRef.current = () => {};
       worker.terminate();
       workerRef.current = null;
       canvas.remove();
@@ -526,10 +597,56 @@ export function MapCanvas({
       showTiles: project.settings.showTileBackground,
       tileOpacity: project.settings.tileOpacity,
       background,
+      area: showArea ? (project.boundingBox ?? null) : null,
       source: OSM_STANDARD,
     } satisfies MainMessage);
     requestDraw();
-  }, [project, projectSession, requestDraw]);
+  }, [project, projectSession, requestDraw, showArea]);
+
+  useEffect(() => {
+    if (!mapApiRef) return;
+    mapApiRef.current = {
+      flyTo(target) {
+        const camera = cameraRef.current ?? (projectRef.current ? cameraForProject(projectRef.current) : null);
+        const viewport = viewportRef.current;
+        if (!camera) return;
+        if ('minLat' in target) {
+          if (viewport.width > 0) updateCamera(fitBounds(camera, target, viewport, 48));
+        } else {
+          updateCamera({ ...camera, centerLat: target.lat, centerLon: target.lon, zoom: target.zoom });
+        }
+      },
+      viewBounds() {
+        const camera = cameraRef.current;
+        const viewport = viewportRef.current;
+        if (!camera || viewport.width <= 0 || viewport.height <= 0) return null;
+        const projection = projectionOf(camera, viewport);
+        const corners = [
+          fromScreen(projection, 0, 0),
+          fromScreen(projection, viewport.width, 0),
+          fromScreen(projection, viewport.width, viewport.height),
+          fromScreen(projection, 0, viewport.height),
+        ];
+        const lats = corners.map((corner) => corner.lat);
+        const lons = corners.map((corner) => corner.lon);
+        return {
+          area: { minLat: Math.min(...lats), minLon: Math.min(...lons), maxLat: Math.max(...lats), maxLon: Math.max(...lons) },
+          zoom: camera.zoom,
+        };
+      },
+      drawArea() {
+        cancelDrawRef.current();
+        return new Promise<BoundingBox | null>((resolve) => {
+          drawModeRef.current = { resolve };
+          hostRef.current?.classList.add('drawing');
+        });
+      },
+    };
+    return () => {
+      mapApiRef.current = null;
+      cancelDrawRef.current();
+    };
+  }, [mapApiRef, updateCamera]);
 
   useEffect(() => {
     if (!exporterRef) return;
@@ -612,18 +729,36 @@ export function MapCanvas({
       </div>
       <div className="map-controls" aria-label="Map controls">
         <button type="button" onClick={() => zoomBy(1)} title="Zoom in" aria-label="Zoom in">
-          +
+          <Icon name="plus" size={16} />
         </button>
         <button type="button" onClick={() => zoomBy(-1)} title="Zoom out" aria-label="Zoom out">
-          −
+          <Icon name="minus" size={16} />
         </button>
-        <button type="button" onClick={fitProject} title="Fit project" disabled={!project?.boundingBox}>
-          Fit
+        <button
+          type="button"
+          onClick={fitProject}
+          title="Fit project"
+          aria-label="Fit project"
+          disabled={!project?.boundingBox}
+        >
+          <Icon name="maximize" size={16} />
         </button>
         <button type="button" onClick={resetNorth} title="Reset north" aria-label="Reset north">
-          N
+          <Icon name="navigation" size={16} />
         </button>
       </div>
+      {drawRect && (
+        <div
+          className="draw-rect"
+          data-testid="draw-rect"
+          style={{
+            left: Math.min(drawRect.x0, drawRect.x1),
+            top: Math.min(drawRect.y0, drawRect.y1),
+            width: Math.abs(drawRect.x1 - drawRect.x0),
+            height: Math.abs(drawRect.y1 - drawRect.y0),
+          }}
+        />
+      )}
       {showTiles && <p className="map-attribution">© OpenStreetMap contributors</p>}
       {project?.showNorthArrow && (
         <div

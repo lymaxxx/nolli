@@ -29,7 +29,9 @@ export function nextPreference(current: ThemePreference): ThemePreference {
 const darkQuery = () => window.matchMedia('(prefers-color-scheme: dark)');
 
 function apply(preference: ThemePreference): void {
-  document.documentElement.dataset.theme = resolveTheme(preference, darkQuery().matches);
+  const resolved = resolveTheme(preference, darkQuery().matches);
+  document.documentElement.dataset.theme = resolved;
+  window.nolliDesktop?.setTitleBarTheme(resolved);
 }
 
 /**
